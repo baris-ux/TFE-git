@@ -6,8 +6,16 @@
 
   let name = $state("");
   let greetMsg = $state("");
-
   let terminalElement: HTMLDivElement;
+
+  let showBranchMenu = $state(false); // par défaut on n'a pas appuyer sur le bouton donc l'état est sur false
+
+  function toggleBranchMenu() {
+    showBranchMenu = !showBranchMenu;
+  }
+
+  /* on définit une fonction qui lorsqu'on l'appelle donne qui inverse la valeur de la variable showBranchMenu 
+     l'inverse de faux ==> vrai */
 
   onMount(() => {
     const term = new Terminal({
@@ -39,10 +47,30 @@
   <div class="content-layout">
     
     <div class="dropdown-content">
-      <button class="dropdown-item">Afficher branches<br>(git branch)</button>
+
+      <div class = "menu-group">
+
+        <button class="dropdown-item" onclick={toggleBranchMenu}>
+          Afficher branches<br>(git branch)
+        </button>
+
+        {#if showBranchMenu} 
+          <div class="sub-menu">
+            <button class="sub-item">
+              branche local (git branch)
+            </button>
+            <button class="sub-item">
+              branche distant (git branch -r)
+            </button>
+            <button class="sub-item">
+              branche local + distant (git branch - a) 
+            </button>
+          </div>
+        {/if}
+      </div>
+
       <button class="dropdown-item">Changer de branche<br>(git checkout)</button>
       <button class="dropdown-item">envoyer modification sur le repo distant<br>(git push)</button>
-
     </div>
 
     <div class="preview-box">
@@ -142,4 +170,27 @@
     overflow: hidden;
     border: 1px dashed white;
   }
+
+  .sub-menu{
+    width : 70%;
+    display: flex;
+    flex-direction : column;
+    gap : 5px;
+  }
+
+  .sub-item{
+    border : none;
+    cursor : pointer;
+    background-color: #444444;
+    color: #dddddd;
+    padding : 10px;
+    text-align : left;
+    box-sizing: border-box; /* à spécifier sinon c'est content-box par défaut */
+  }
+
+  .sub-item:hover {
+    background-color: #555555;
+    color: white;
+  }
+
 </style>
