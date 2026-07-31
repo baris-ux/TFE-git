@@ -18,7 +18,8 @@
     "@tauri-apps/plugin-opener": "^2",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
-    "add": "^2.0.9"
+    "add": "^2.0.9",
+    "tauri-pty": "^0.3.1"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.6",

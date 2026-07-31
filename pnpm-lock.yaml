@@ -23,6 +23,9 @@ importers:
       add:
         specifier: ^2.0.9
         version: 2.0.9
+      tauri-pty:
+        specifier: ^0.3.1
+        version: 0.3.1
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^3.0.6
@@ -1010,6 +1013,9 @@ packages:
     resolution: {integrity: sha512-PY8LOw7xP6c8IOiVqdo0sbbZVYhXRSfklOQLAUyGBKqjTX0wx/z4l/9J+PmBpmlLnxzEb1NqltxQ5/wZme/Cmg==}
     engines: {node: '>=18'}
 
+  tauri-pty@0.3.1:
+    resolution: {integrity: sha512-/7fph+RsJ6w/LabaJEjIoa5kzc8a9soRUnjw2D/whBf5EaWQwA+iF0XdU6zdfpA7o4rXijALQRePQ/Fw6YYxzw==}
+
   tinyglobby@0.2.17:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
@@ -1889,6 +1895,10 @@ snapshots:
       zimmerframe: 1.1.4
     transitivePeerDependencies:
       - '@typescript-eslint/types'
+
+  tauri-pty@0.3.1:
+    dependencies:
+      '@tauri-apps/api': 2.11.1
 
   tinyglobby@0.2.17:
     dependencies:

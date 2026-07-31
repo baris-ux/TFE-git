@@ -3,6 +3,7 @@
   import { Terminal } from '@xterm/xterm';
   import { onMount } from "svelte";
   import "@xterm/xterm/css/xterm.css";
+  import { spawn } from "tauri-pty";
 
   let name = $state("");
   let greetMsg = $state("");
@@ -23,12 +24,20 @@
     });
 
     term.open(terminalElement);
-    term.write("Hello from xterm!");
+
+    const pty = spawn('bash', [], {
+      cols: term.cols,
+      rows: term.rows,
+    });
 
     term.onData((data) => {
-      // Pour l'instant, on se contente de ré-afficher ce que l'utilisateur tape
+      pty.write(data);
+    });
+
+    pty.onData((data) => {
       term.write(data);
     });
+
   });
 
   async function greet(event: Event) {
@@ -55,6 +64,7 @@
         </button>
 
         {#if showBranchMenu} 
+        
           <div class="sub-menu">
             <button class="sub-item">
               branche local (git branch)
@@ -71,6 +81,7 @@
 
       <button class="dropdown-item">Changer de branche<br>(git checkout)</button>
       <button class="dropdown-item">envoyer modification sur le repo distant<br>(git push)</button>
+      <button class="dropdown-item">fait un truc mais je sais pas quoi<br>(git commit)</button>
     </div>
 
     <div class="preview-box">
