@@ -5,6 +5,7 @@
   import "@xterm/xterm/css/xterm.css";
   import { createGitgraph } from "@gitgraph/js";
   import { spawn } from "tauri-pty";
+  import { open } from "@tauri-apps/plugin-dialog";
 
   let name = $state("");
   let greetMsg = $state("");
@@ -74,7 +75,7 @@
     term.onData((data) => pty.write(data));
     pty.onData((data) => term.write(data));
 
-    // ---  code GitGraph ---
+    // code GitGraph -
     const gitgraph = createGitgraph(gitgraphElement, {
       orientation: "horizontal",
       template: "metro",
@@ -90,17 +91,18 @@
 
     main.merge(feat, "Merge branch 'feat/menu'");
   });
-
-  async function greet(event: Event) {
-    event.preventDefault();
-    greetMsg = await invoke("greet", { name });
-  }
 </script>
 
 <main class="container">
-  <h1>Actions guidées</h1>
+  <header class="header-bar">
+    <div>
+      <h1>Actions guidées</h1>
+      <p>Projet actuel : <span class="project-path">actuelle</span></p>
+    </div>
 
-  <p>Cliquer sur une action pour générer la commande git</p>
+    <button class="open-btn"> 📂 Ouvrir un projet Git </button>
+  </header>
+
   <div class="content-layout">
     <div class="dropdown-content">
       {#each dropdownGitActions as action}
@@ -239,5 +241,45 @@
   .sub-item:hover {
     background-color: #555555;
     color: white;
+  }
+
+  /* Styles pour le Header et le bouton "chosir projet"*/
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1e1e1e;
+    padding: 15px 20px;
+    border-radius: 6px;
+    border: 1px solid #333333;
+  }
+
+  .header-bar h1 {
+    margin: 0 0 5px 0;
+  }
+
+  .header-bar p {
+    margin: 0;
+  }
+
+  .project-path {
+    color: #61afef;
+    font-family: monospace;
+  }
+
+  .open-btn {
+    background-color: #2c539e;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .open-btn:hover {
+    background-color: #3b69c4;
   }
 </style>
