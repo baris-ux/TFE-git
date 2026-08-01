@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import { Terminal } from '@xterm/xterm';
+  import { Terminal } from "@xterm/xterm";
   import { onMount } from "svelte";
   import "@xterm/xterm/css/xterm.css";
   import { spawn } from "tauri-pty";
@@ -9,23 +9,54 @@
   let greetMsg = $state("");
   let terminalElement: HTMLDivElement;
 
-  let showBranchMenu = $state(false); // par défaut on n'a pas appuyer sur le bouton donc l'état est sur false
+  let activeMenu = $state<string | null>(null);
 
-  function toggleBranchMenu() {
-    showBranchMenu = !showBranchMenu;
+  // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
+
+  function toggleMenu(command: string) {
+    if (activeMenu === command) {
+      // si la valeur passé à command est égale en valeur et en type à activeMenu
+      activeMenu = null; // la valeur qu'on passe au menu active est null
+    } else {
+      activeMenu = command; // la valeur qu'on passe à la variable est command (le texte du bouton sur lequel on appuie)
+    }
   }
+
+  const dropdownGitActions = [
+    {
+      label: "Afficher branches",
+      command: "git branch",
+      subMenu: [
+        { label: "branche local", command: "git branch" },
+        { label: "branche distant", command: "git branch -r" },
+        { label: "branche local + distant", command: "git branch -a" },
+      ],
+    },
+    {
+      label: "Changer de branche",
+      command: "git checkout",
+    },
+    {
+      label: "envoyer modification sur le repo distant",
+      command: "git push",
+    },
+    {
+      label: "fait un truc mais je sais pas quoi",
+      command: "git commit",
+    },
+  ];
 
   /* on définit une fonction qui lorsqu'on l'appelle donne qui inverse la valeur de la variable showBranchMenu 
      l'inverse de faux ==> vrai */
 
   onMount(() => {
     const term = new Terminal({
-      cursorBlink: true
+      cursorBlink: true,
     });
 
     term.open(terminalElement);
 
-    const pty = spawn('bash', [], {
+    const pty = spawn("bash", [], {
       cols: term.cols,
       rows: term.rows,
     });
@@ -37,51 +68,40 @@
     pty.onData((data) => {
       term.write(data);
     });
-
   });
 
   async function greet(event: Event) {
     event.preventDefault();
     greetMsg = await invoke("greet", { name });
   }
-
 </script>
 
 <main class="container">
-
   <h1>Actions guidées</h1>
 
   <p>Cliquer sur une action pour générer la commande git</p>
 
   <div class="content-layout">
-    
     <div class="dropdown-content">
-
-      <div class = "menu-group">
-
-        <button class="dropdown-item" onclick={toggleBranchMenu}>
-          Afficher branches<br>(git branch)
+      {#each dropdownGitActions as action}
+        <!-- on vient créer tous les boutons dans notre liste d'objets -->
+        <button
+          class="dropdown-item"
+          onclick={() => toggleMenu(action.command)}
+        >
+          {action.label}
         </button>
 
-        {#if showBranchMenu} 
-        
+        {#if activeMenu === action.command && action.subMenu}
           <div class="sub-menu">
-            <button class="sub-item">
-              branche local (git branch)
-            </button>
-            <button class="sub-item">
-              branche distant (git branch -r)
-            </button>
-            <button class="sub-item">
-              branche local + distant (git branch - a) 
-            </button>
+            {#each action.subMenu as sub}
+              <button class="sub-item">
+                {sub.label}
+              </button>
+            {/each}
           </div>
         {/if}
-      </div>
-
-      <button class="dropdown-item">Changer de branche<br>(git checkout)</button>
-      <button class="dropdown-item">envoyer modification sur le repo distant<br>(git push)</button>
-      <button class="dropdown-item">fait un truc mais je sais pas quoi<br>(git commit)</button>
+      {/each}
     </div>
 
     <div class="preview-box">
@@ -90,7 +110,6 @@
   </div>
 
   <div bind:this={terminalElement} class="terminal-container"></div>
-
 </main>
 
 <style>
@@ -106,13 +125,14 @@
     height: 100vh;
     padding: 20px;
     box-sizing: border-box;
-    gap : 15px;
+    gap: 15px;
   }
 
-  h1, p {
+  h1,
+  p {
     color: white;
     font-weight: bold;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     margin-top: 0;
     margin-bottom: 15px;
   }
@@ -122,13 +142,13 @@
     flex-direction: row;
     gap: 15px;
     width: 100%;
-    flex: 4; 
-    min-height: 0; 
+    flex: 4;
+    min-height: 0;
   }
 
   .dropdown-content {
     background-color: #505050;
-    width : 30%;
+    width: 30%;
 
     display: flex;
     flex-direction: column;
@@ -156,7 +176,6 @@
     background-color: #888888;
   }
 
-
   /* Box "À venir" */
   .preview-box {
     background-color: #2a2a2a;
@@ -166,7 +185,7 @@
     justify-content: center;
     align-items: center;
     color: #aaaaaa;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1.2rem;
     font-weight: bold;
     border-radius: 6px;
@@ -182,20 +201,20 @@
     border: 1px dashed white;
   }
 
-  .sub-menu{
-    width : 70%;
+  .sub-menu {
+    width: 70%;
     display: flex;
-    flex-direction : column;
-    gap : 5px;
+    flex-direction: column;
+    gap: 5px;
   }
 
-  .sub-item{
-    border : none;
-    cursor : pointer;
+  .sub-item {
+    border: none;
+    cursor: pointer;
     background-color: #444444;
     color: #dddddd;
-    padding : 10px;
-    text-align : left;
+    padding: 10px;
+    text-align: left;
     box-sizing: border-box; /* à spécifier sinon c'est content-box par défaut */
   }
 
@@ -203,5 +222,4 @@
     background-color: #555555;
     color: white;
   }
-
 </style>
