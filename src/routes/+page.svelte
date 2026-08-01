@@ -3,11 +3,13 @@
   import { Terminal } from "@xterm/xterm";
   import { onMount } from "svelte";
   import "@xterm/xterm/css/xterm.css";
+  import { createGitgraph } from "@gitgraph/js";
   import { spawn } from "tauri-pty";
 
   let name = $state("");
   let greetMsg = $state("");
   let terminalElement: HTMLDivElement;
+  let gitgraphElement: HTMLDivElement;
 
   let activeMenu = $state<string | null>(null);
 
@@ -35,14 +37,30 @@
     {
       label: "Changer de branche",
       command: "git checkout",
+      subMenu: [
+        { label: "branche local", command: "git branch" },
+        { label: "branche distant", command: "git branch -r" },
+      ],
     },
     {
-      label: "envoyer modification sur le repo distant",
+      label: "Envoyer modification sur le repo distant",
       command: "git push",
     },
     {
-      label: "fait un truc mais je sais pas quoi",
+      label: "git status",
       command: "git commit",
+      subMenu: [
+        { label: "Statut détaillé (par défaut)", command: "git status" },
+        { label: "Statut compact", command: "git status -s" },
+      ],
+    },
+    {
+      label: "Envoyer les modifications",
+      command: "git push",
+      subMenu: [
+        { label: "Push simple (branche actuelle)", command: "git push" },
+        { label: "Publier une nouvelle branche (-u)", command: "git push -u" },
+      ],
     },
   ];
 
@@ -50,24 +68,27 @@
      l'inverse de faux ==> vrai */
 
   onMount(() => {
-    const term = new Terminal({
-      cursorBlink: true,
-    });
-
+    const term = new Terminal({ cursorBlink: true });
     term.open(terminalElement);
+    const pty = spawn("bash", [], { cols: term.cols, rows: term.rows });
+    term.onData((data) => pty.write(data));
+    pty.onData((data) => term.write(data));
 
-    const pty = spawn("bash", [], {
-      cols: term.cols,
-      rows: term.rows,
+    // ---  code GitGraph ---
+    const gitgraph = createGitgraph(gitgraphElement, {
+      orientation: "horizontal",
+      template: "metro",
     });
 
-    term.onData((data) => {
-      pty.write(data);
-    });
+    // on créer un faux arbre git pour le moment
+    const main = gitgraph.branch("main");
+    main.commit("Initial commit");
 
-    pty.onData((data) => {
-      term.write(data);
-    });
+    const feat = gitgraph.branch("feat/menu");
+    feat.commit("Ajout du composant Dropdown");
+    feat.commit("Ajout des sous-menus");
+
+    main.merge(feat, "Merge branch 'feat/menu'");
   });
 
   async function greet(event: Event) {
@@ -80,7 +101,6 @@
   <h1>Actions guidées</h1>
 
   <p>Cliquer sur une action pour générer la commande git</p>
-
   <div class="content-layout">
     <div class="dropdown-content">
       {#each dropdownGitActions as action}
@@ -96,7 +116,7 @@
           <div class="sub-menu">
             {#each action.subMenu as sub}
               <button class="sub-item">
-                {sub.label}
+                {sub.label} ( {sub.command} )
               </button>
             {/each}
           </div>
@@ -104,9 +124,7 @@
       {/each}
     </div>
 
-    <div class="preview-box">
-      <span>À venir</span>
-    </div>
+    <div class="preview-box" bind:this={gitgraphElement}></div>
   </div>
 
   <div bind:this={terminalElement} class="terminal-container"></div>

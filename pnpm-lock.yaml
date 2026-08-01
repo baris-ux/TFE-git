@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@gitgraph/js':
+        specifier: ^1.4.0
+        version: 1.4.0
       '@tauri-apps/api':
         specifier: ^2
         version: 2.11.1
@@ -257,6 +260,12 @@ packages:
   '@eslint/plugin-kit@0.7.2':
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@gitgraph/core@1.5.0':
+    resolution: {integrity: sha512-8CeeHbkKoFHM1y9vfjYiHyEpzl1mEhVrg5c/eFgDBsntOYswoDKU2yOf6DjtVINcE60wmcuynBSJqjMkQo07Ww==}
+
+  '@gitgraph/js@1.4.0':
+    resolution: {integrity: sha512-7wxTTCFnRVjsqj+Zt09+3F79WhH4MK46ZS20AwbcB/MJFshSMeMH4nYmNDPa9McVsiL+cFsvW1pmZoquAOoHMw==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -1216,6 +1225,12 @@ snapshots:
     dependencies:
       '@eslint/core': 1.2.1
       levn: 0.4.1
+
+  '@gitgraph/core@1.5.0': {}
+
+  '@gitgraph/js@1.4.0':
+    dependencies:
+      '@gitgraph/core': 1.5.0
 
   '@humanfs/core@0.19.2':
     dependencies:
