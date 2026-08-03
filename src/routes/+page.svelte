@@ -6,6 +6,7 @@
   import { createGitgraph } from "@gitgraph/js";
   import { spawn } from "tauri-pty";
   import { open } from "@tauri-apps/plugin-dialog";
+  import { path } from "@tauri-apps/api";
 
   let name = $state("");
   let greetMsg = $state("");
@@ -13,6 +14,7 @@
   let gitgraphElement: HTMLDivElement;
 
   let activeMenu = $state<string | null>(null);
+  let projectPath = $state<string | null>(null); // peut contenir un string (le path du dossier) ou alors null (si aucun dossier fournit)
 
   // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
 
@@ -23,6 +25,22 @@
     } else {
       activeMenu = command; // la valeur qu'on passe à la variable est command (le texte du bouton sur lequel on appuie)
     }
+  }
+
+  async function selectProject() {
+    const selected = await open({
+      directory: true, // permet de choisir un Folder
+      multiple: false, // interdiction de choisir plusieur Folders
+    });
+
+    if (selected && typeof selected === "string") {
+      projectPath = selected;
+      loadGitHistory(selected);
+    }
+  }
+
+  async function loadGitHistory(path: string) {
+    console.log("Project selectionné : ", path);
   }
 
   const dropdownGitActions = [
@@ -81,7 +99,7 @@
       template: "metro",
     });
 
-    // on créer un faux arbre git pour le moment
+    /* arbre git hardcodé
     const main = gitgraph.branch("main");
     main.commit("Initial commit");
 
@@ -89,7 +107,7 @@
     feat.commit("Ajout du composant Dropdown");
     feat.commit("Ajout des sous-menus");
 
-    main.merge(feat, "Merge branch 'feat/menu'");
+    main.merge(feat, "Merge branch 'feat/menu'");*/
   });
 </script>
 
@@ -97,10 +115,12 @@
   <header class="header-bar">
     <div>
       <h1>Actions guidées</h1>
-      <p>Projet actuel : <span class="project-path">actuelle</span></p>
+      <p>Projet actuel : <span class="project-path">{projectPath ?? "aucun projet selectionné"}</span></p>
     </div>
 
-    <button class="open-btn"> 📂 Ouvrir un projet Git </button>
+    <button class="open-btn" onclick={selectProject}>
+      📂 Ouvrir un projet Git
+    </button>
   </header>
 
   <div class="content-layout">
