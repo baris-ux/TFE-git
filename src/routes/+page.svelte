@@ -12,6 +12,7 @@
   let greetMsg = $state("");
   let terminalElement: HTMLDivElement;
   let gitgraphElement: HTMLDivElement;
+  let commits = $state<CommitInfo[]>([]);
 
   let activeMenu = $state<string | null>(null);
   let projectPath = $state<string | null>(null); // peut contenir un string (le path du dossier) ou alors null (si aucun dossier fournit)
@@ -41,6 +42,54 @@
 
   async function loadGitHistory(path: string) {
     console.log("Project selectionné : ", path);
+
+    try {
+      const isRepo = await invoke<boolean>("if_git_repository", {path}); // on récupère le résultat de la fonction rust sous forme de booleen
+
+      if (isRepo){ // si isRepo est vrai
+        commits = await invoke<CommitInfo[]>("get_git", { path }); // on appelle la structure rust et la fonction get_git en rust auquel on passe le paramètre le path du repo
+        renderGitGraph(commits);
+      } 
+    }
+
+    catch(error){
+      console.error("Erreur lors de la vérification Git:", error);
+    }
+  }
+
+  function renderGitGraph(commitsList: CommitInfo){
+
+    gitgraphElement.innerHTML = "" // on vient vider le contenu avant de le déssiner pour éviter que plusieur abres git se superposent
+
+    const gitgraph = createGitgraph(gitgraphElement, {
+      orientation: "horizontal", 
+      template: "metro",
+    });
+
+    const main = gitgraph.branch("main");
+
+    for (const c of commits) {
+      main.commit({
+        hash: c.id.slice(0, 7), // hash raccourci (7 caractères), plus lisible
+        subject: c.message,
+        author: c.author,
+      });
+    }
+  }
+
+
+  /*  interfaceCommitInfo
+      indique dans notre code svelte à quoi doit ressembler une un "objet" 
+      commit avec ses clé et le type de valeur pour chaque clé 
+      il ne contient pas d'information en tant que telle  
+  */
+
+  interface CommitInfo {
+    id: string,
+    message: string,
+    author: string,
+    parents: string[],
+    branches: string[],
   }
 
   const dropdownGitActions = [
@@ -92,23 +141,8 @@
     const pty = spawn("bash", [], { cols: term.cols, rows: term.rows });
     term.onData((data) => pty.write(data));
     pty.onData((data) => term.write(data));
-
-    // code GitGraph -
-    const gitgraph = createGitgraph(gitgraphElement, {
-      orientation: "horizontal",
-      template: "metro",
-    });
-
-    /* arbre git hardcodé
-    const main = gitgraph.branch("main");
-    main.commit("Initial commit");
-
-    const feat = gitgraph.branch("feat/menu");
-    feat.commit("Ajout du composant Dropdown");
-    feat.commit("Ajout des sous-menus");
-
-    main.merge(feat, "Merge branch 'feat/menu'");*/
   });
+
 </script>
 
 <main class="container">
