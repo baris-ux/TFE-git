@@ -21,10 +21,14 @@
   let activeMenu = $state<string | null>(null); 
   let projectPath = $state<string | null>(null); // peut contenir un string (le path du dossier) ou alors null (si aucun dossier fournit)
 
-  let scale = $state(1); // c'est la valeur par défaut qu'on aura du zoom, c'est son echelle 
+  let pty: any = $state(null);
 
-  let x = $state(0);
-  let y = $state(0);
+  let isDragging = false // détection du clique gauche
+  let startX = 0;
+  let startY = 0;
+  let scrollLeft = 0;
+  let scrollTop = 0;
+
 
   // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
   function toggleMenu(command: string) {
@@ -39,16 +43,18 @@
   async function selectProject() {
     const selected = await open({
       directory: true, // permet de choisir un Folder
-      multiple: false, // interdiction de choisir plusieur Folders
+      multiple: false, // interdiction de choisir plusieurs Folders
     });
 
-    if (selected && typeof selected === "string") {
+    if (selected && typeof selected === "string") { 
       projectPath = selected;
-      loadGitHistory(selected);
+      loadGitHistory(selected); 
+      // à noter que le path passé en paramètre corresspond à un vrai dossier sur notre ordinateur mais il peut s'agir
+      // d'un projet git ou non !
     }
   }
 
-  async function loadGitHistory(path: string) { // cette fonction permet uniquement de vérfiier si le dossier sélectionné est un projet git
+  async function loadGitHistory(path: string) { // cette fonction permet uniquement de vérfier si le dossier sélectionné est un projet git
     console.log("Project selectionné : ", path);
 
     try {
@@ -57,7 +63,11 @@
       if (isRepo){ // si isRepo est vrai
         commits = await invoke<CommitInfo[]>("get_git", { path }); // on appelle la structure rust et la fonction get_git en rust auquel on passe le paramètre le path du repo
         renderGitGraph(commits);
-      } 
+      }
+      else{
+        commits = [];
+        gitgraphElement.innerText = "Ce n'est pas un projet git ..."
+      }
     }
 
     catch(error){
@@ -67,7 +77,7 @@
 
   function renderGitGraph(commitsList: CommitInfo[]){
 
-    gitgraphElement.innerHTML = "" // on vient vider le contenu avant de le déssiner pour éviter que plusieur abres git se superposent
+    gitgraphElement.innerHTML = "" // on vient vider le contenu avant de le déssiner pour éviter que plusieurs abres git se superposent si on selectionne un autre projet
 
     const gitgraph = createGitgraph(gitgraphElement, {
       orientation: "horizontal", 
@@ -143,13 +153,51 @@
   /* on définit une fonction qui lorsqu'on l'appelle donne qui inverse la valeur de la variable showBranchMenu 
      l'inverse de faux ==> vrai */
 
-  onMount(() => {                                         // onMount est une fonction Svelte qui s'execute une seule fois lors de l'initialisation de la page
+  onMount(() => {                                         // onMount est une fonction Svelte qui s'execute une seule fois lors de l'initialisation de la page, 
     const term = new Terminal({ cursorBlink: true });     // on vient créer un visuel de terminal, c'est une coquille vide ou l'on peut rien y faire à part écrire, on a seulelement le clignotement du cureur
     term.open(terminalElement);                           // on vient injecter le code du package xterm dans terminalElement, (qui pour rappel vient contenir une référence div dans la dom)
-    const pty = spawn("bash", [], { cols: term.cols, rows: term.rows }); // on vient générer le programme bash de notre OS, [] spécifie les options au démaragge du bash ici rien pour un démarage du bash par défaut 
-    term.onData((data) => pty.write(data));               // quand on vient taper des caractère elles sont dorénavent transmit au pty. 
-    pty.onData((data) => term.write(data));               // on vient écouter 
-  });
+    
+    pty = spawn("bash", [], { cols: term.cols, rows: term.rows }); // on vient générer le programme bash de notre OS, [] spécifie les options au démaragge du bash ici rien pour un démarage du bash par défaut 
+    
+    term.onData((data) => pty.write(data));               // quand on vient taper des caractère elles sont dorénavent transmit au pty. il s'active même une fois que la fonction onMount est finei
+    pty.onData((data) => term.write(data));               // on vient écouter écouter la réponse du système 
+
+
+
+    if (gitgraphElement) {
+          // 1. Clic enfoncé : Mémorise le point de départ (SANS 'const' devant startX/startY)
+          gitgraphElement.addEventListener("mousedown", (event) => {
+            isDragging = true;
+            startX = event.pageX - gitgraphElement.offsetLeft; 
+            startY = event.pageY - gitgraphElement.offsetTop;
+            scrollLeft = gitgraphElement.scrollLeft;
+            scrollTop = gitgraphElement.scrollTop;
+          });
+
+          // 2. Relâchement / Sortie de zone
+          const stopDragging = () => { isDragging = false; };
+          gitgraphElement.addEventListener("mouseup", stopDragging);
+          gitgraphElement.addEventListener("mouseleave", stopDragging);
+
+          // 3. Glissement : Effectue le calcul de déplacement
+          gitgraphElement.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - gitgraphElement.offsetLeft;
+            const y = e.pageY - gitgraphElement.offsetTop;
+            gitgraphElement.scrollLeft = scrollLeft - (x - startX);
+            gitgraphElement.scrollTop = scrollTop - (y - startY);
+          });
+        }
+    }
+  );
+
+
+  function generateCommand(command: string){
+    if (pty){ // si le pty n'exsite pas 
+      pty.write(`${command}`);
+    }
+  }
 
 </script>
 
@@ -180,7 +228,10 @@
         {#if activeMenu === action.command && action.subMenu}
           <div class="sub-menu">
             {#each action.subMenu as sub}
-              <button class="sub-item">
+              <button 
+                class="sub-item" 
+                onclick={() => generateCommand(sub.command)}
+              >
                 {sub.label} ( {sub.command} )
               </button>
             {/each}
@@ -191,7 +242,6 @@
 
     <div 
       class="tree-wrapper"
-      style="transform: scale({scale});"
       bind:this={gitgraphElement}
     ></div>
   </div>
@@ -264,21 +314,30 @@
   }
 
   .tree-wrapper {
+
     background-color: #2a2a2a;
     border: 2px dashed #666666;
-    flex: 1; /* Prend l'autre 50% de l'espace */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    flex: 1;
     color: #aaaaaa;
     font-family: "Inter", sans-serif;
     font-size: 1.2rem;
     font-weight: bold;
     border-radius: 6px;
     box-sizing: border-box;
-    overflow: hidden;
+
+    display: grid;
+    place-items: center;
+
+    overflow: auto;         /* auto permet à ce que la barre de scroll apparait si l'element dépasse */
   }
 
+  .tree-wrapper :global(svg circle) { 
+    cursor: pointer;
+  }
+
+  .tree-wrapper:active {
+    cursor: grabbing;
+  }
 
 
   .terminal-container {
