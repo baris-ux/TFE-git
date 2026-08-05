@@ -3,7 +3,7 @@
   import { Terminal } from "@xterm/xterm";
   import { onMount } from "svelte";
   import "@xterm/xterm/css/xterm.css";
-  import { createGitgraph } from "@gitgraph/js";
+  import { createGitgraph, templateExtend, TemplateName } from "@gitgraph/js";
   import { spawn } from "tauri-pty";
   import { open } from "@tauri-apps/plugin-dialog";
   import { path } from "@tauri-apps/api";
@@ -28,6 +28,16 @@
   let startY = 0;
   let scrollLeft = 0;
   let scrollTop = 0;
+
+  const myGitTheme = templateExtend(TemplateName.Metro, { // le template par défaut est metro, on a également blackarrow templateExtend() permet de créer notre propre template
+    colors: [
+      "#3b82f6", // bleu branche main
+      "#10b981", // 2ème branche -> VERT
+      "#f59e0b", // 3ème branche -> ORANGE
+      "#ec4899", // 4ème branche -> ROSE
+      "#8b5cf6"  // 5ème branche -> VIOLET
+    ]
+  });
 
 
   // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
@@ -75,25 +85,41 @@
     }
   }
 
-  function renderGitGraph(commitsList: CommitInfo[]){
+export function renderGitGraph(commits: any[]) {
+  
+  if (!gitgraphElement) { // si la référence de div est vide (null / undefined), renvoie true  
+    return; // le return permet d'empêcher le reste de la fonction de s'executer si c'est vrai 
+  } 
 
-    gitgraphElement.innerHTML = "" // on vient vider le contenu avant de le déssiner pour éviter que plusieurs abres git se superposent si on selectionne un autre projet
 
-    const gitgraph = createGitgraph(gitgraphElement, {
-      orientation: "horizontal", 
-      template: "metro",
-    });
+  gitgraphElement.innerHTML = ""; // On néttoie la DOM à chaque fois quela fonction renderGitGraph est appelé pour éviter pour déssiner un nouvel arbre git
 
-    const main = gitgraph.branch("main");
 
-    for (const c of commits) {
-      main.commit({
-        hash: c.id.slice(0, 7), // hash raccourci (7 caractères), plus lisible
-        subject: c.message,
-        author: c.author,
-      });
+  const gitgraph = createGitgraph(gitgraphElement, { template: myGitTheme });
+
+  const branches: Record<string, any> = {}; // on créer un objet vide, Record<> indique qu'il s'agit d'un objet, string indique que la clé sera du string, any indique que la valeur peut etre de n'importe quel type
+  branches["main"] = gitgraph.branch("main"); // Reçoit le bleu par défaut
+
+  const reversedCommits = [...commits].reverse(); // reverse inverse l'ordre des éléments une liste, on le reverse pour déssiner du bas (commit les plus ancien) vers le haut (commit les plus récents)
+  const totalCommits = reversedCommits.length
+
+  reversedCommits.forEach((c, index) => {
+    const branchName = c.branch || "main";
+
+    if (!branches[branchName]) {
+      branches[branchName] = branches["main"].branch(branchName);
     }
-  }
+
+    const isHead = index === totalCommits - 1;
+
+    branches[branchName].commit({
+      subject: c.message,
+      hash: c.hash,
+      author: c.author,
+      tag: isHead ? "HEAD" : undefined
+    });
+  });
+}
 
 
   /*  interfaceCommitInfo
@@ -160,7 +186,9 @@
     pty = spawn("bash", [], { cols: term.cols, rows: term.rows }); // on vient générer le programme bash de notre OS, [] spécifie les options au démaragge du bash ici rien pour un démarage du bash par défaut 
     
     term.onData((data) => pty.write(data));               // quand on vient taper des caractère elles sont dorénavent transmit au pty. il s'active même une fois que la fonction onMount est finei
-    pty.onData((data) => term.write(data));               // on vient écouter écouter la réponse du système 
+    pty.onData((data: string) => {                        // onData permet d'écouter l'arrivé de donnée, à l'arrivé on execute une fonction
+      term.write(data);                                   // on écrit dans le composant xterm le résutlat renvoyé par le bash
+    })
 
 
 
@@ -327,8 +355,11 @@
 
     display: grid;
     place-items: center;
-
     overflow: auto;         /* auto permet à ce que la barre de scroll apparait si l'element dépasse */
+  }
+
+  .tree-wrapper :global(svg) {
+    padding: 60px; 
   }
 
   .tree-wrapper :global(svg circle) { 
