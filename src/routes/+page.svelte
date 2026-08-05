@@ -8,17 +8,25 @@
   import { open } from "@tauri-apps/plugin-dialog";
   import { path } from "@tauri-apps/api";
 
-  let name = $state("");
-  let greetMsg = $state("");
+
   let terminalElement: HTMLDivElement;
   let gitgraphElement: HTMLDivElement;
+
+  //on vient stocker la référence vers un div contenu dans la DOM, on ne stocke pas le div en elle même !
+  // comme on utilise des package pour le terminal et pour dessiner le git tree on vient indiquer ou les déssiner
+  // cela permet d'éviter document.getElementById() car nos composant svelte son réutilisable
+
   let commits = $state<CommitInfo[]>([]);
 
-  let activeMenu = $state<string | null>(null);
+  let activeMenu = $state<string | null>(null); 
   let projectPath = $state<string | null>(null); // peut contenir un string (le path du dossier) ou alors null (si aucun dossier fournit)
 
-  // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
+  let scale = $state(1); // c'est la valeur par défaut qu'on aura du zoom, c'est son echelle 
 
+  let x = $state(0);
+  let y = $state(0);
+
+  // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
   function toggleMenu(command: string) {
     if (activeMenu === command) {
       // si la valeur passé à command est égale en valeur et en type à activeMenu
@@ -40,7 +48,7 @@
     }
   }
 
-  async function loadGitHistory(path: string) {
+  async function loadGitHistory(path: string) { // cette fonction permet uniquement de vérfiier si le dossier sélectionné est un projet git
     console.log("Project selectionné : ", path);
 
     try {
@@ -57,7 +65,7 @@
     }
   }
 
-  function renderGitGraph(commitsList: CommitInfo){
+  function renderGitGraph(commitsList: CommitInfo[]){
 
     gitgraphElement.innerHTML = "" // on vient vider le contenu avant de le déssiner pour éviter que plusieur abres git se superposent
 
@@ -135,12 +143,12 @@
   /* on définit une fonction qui lorsqu'on l'appelle donne qui inverse la valeur de la variable showBranchMenu 
      l'inverse de faux ==> vrai */
 
-  onMount(() => {
-    const term = new Terminal({ cursorBlink: true });
-    term.open(terminalElement);
-    const pty = spawn("bash", [], { cols: term.cols, rows: term.rows });
-    term.onData((data) => pty.write(data));
-    pty.onData((data) => term.write(data));
+  onMount(() => {                                         // onMount est une fonction Svelte qui s'execute une seule fois lors de l'initialisation de la page
+    const term = new Terminal({ cursorBlink: true });     // on vient créer un visuel de terminal, c'est une coquille vide ou l'on peut rien y faire à part écrire, on a seulelement le clignotement du cureur
+    term.open(terminalElement);                           // on vient injecter le code du package xterm dans terminalElement, (qui pour rappel vient contenir une référence div dans la dom)
+    const pty = spawn("bash", [], { cols: term.cols, rows: term.rows }); // on vient générer le programme bash de notre OS, [] spécifie les options au démaragge du bash ici rien pour un démarage du bash par défaut 
+    term.onData((data) => pty.write(data));               // quand on vient taper des caractère elles sont dorénavent transmit au pty. 
+    pty.onData((data) => term.write(data));               // on vient écouter 
   });
 
 </script>
@@ -153,7 +161,8 @@
     </div>
 
     <button class="open-btn" onclick={selectProject}>
-      📂 Ouvrir un projet Git
+      
+      Ouvrir un projet Git
     </button>
   </header>
 
@@ -180,7 +189,11 @@
       {/each}
     </div>
 
-    <div class="preview-box" bind:this={gitgraphElement}></div>
+    <div 
+      class="tree-wrapper"
+      style="transform: scale({scale});"
+      bind:this={gitgraphElement}
+    ></div>
   </div>
 
   <div bind:this={terminalElement} class="terminal-container"></div>
@@ -250,8 +263,7 @@
     background-color: #888888;
   }
 
-  /* Box "À venir" */
-  .preview-box {
+  .tree-wrapper {
     background-color: #2a2a2a;
     border: 2px dashed #666666;
     flex: 1; /* Prend l'autre 50% de l'espace */
@@ -264,7 +276,10 @@
     font-weight: bold;
     border-radius: 6px;
     box-sizing: border-box;
+    overflow: hidden;
   }
+
+
 
   .terminal-container {
     flex: 1;
@@ -336,4 +351,5 @@
   .open-btn:hover {
     background-color: #3b69c4;
   }
+
 </style>
