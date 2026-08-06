@@ -3,11 +3,16 @@
   import { Terminal } from "@xterm/xterm";
   import { onMount } from "svelte";
   import "@xterm/xterm/css/xterm.css";
-  import { createGitgraph, templateExtend, TemplateName } from "@gitgraph/js";
+  import { createGitgraph } from "@gitgraph/js";
   import { spawn } from "tauri-pty";
   import { open } from "@tauri-apps/plugin-dialog";
   import { path } from "@tauri-apps/api";
 
+  import Header from "$lib/components/Header.svelte";
+  import GitActionMenu from "$lib/components/gitActionMenu.svelte";
+
+  import { dropdownGitActions, type CommitInfo } from "$lib/config/GitActionsMenu";
+  import { myGitTheme } from "$lib/config/gitTheme";
 
   let terminalElement: HTMLDivElement;
   let gitgraphElement: HTMLDivElement;
@@ -30,16 +35,6 @@
   let scrollTop = 0;
 
   let activeView = $state<"split" | "actions" | "tree">("split"); // cette variable va permettre de stocker la vue, écrant scinder, full écran sur le menu d'action ou alors full écran sur le graphe visuelle
-
-  const myGitTheme = templateExtend(TemplateName.Metro, { // le template par défaut est metro, on a également blackarrow templateExtend() permet de créer notre propre template
-    colors: [
-      "#3b82f6", // bleu branche main
-      "#10b981", // 2ème branche -> VERT
-      "#f59e0b", // 3ème branche -> ORANGE
-      "#ec4899", // 4ème branche -> ROSE
-      "#8b5cf6"  // 5ème branche -> VIOLET
-    ]
-  });
 
 
   // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
@@ -123,61 +118,6 @@ export function renderGitGraph(commits: any[]) {
   });
 }
 
-
-  /*  interfaceCommitInfo
-      indique dans notre code svelte à quoi doit ressembler une un "objet" 
-      commit avec ses clé et le type de valeur pour chaque clé 
-      il ne contient pas d'information en tant que telle  
-  */
-
-  interface CommitInfo {
-    id: string,
-    message: string,
-    author: string,
-    parents: string[],
-    branches: string[],
-  }
-
-  const dropdownGitActions = [
-    {
-      label: "Afficher branches",
-      command: "git branch",
-      subMenu: [
-        { label: "branche local", command: "git branch" },
-        { label: "branche distant", command: "git branch -r" },
-        { label: "branche local + distant", command: "git branch -a" },
-      ],
-    },
-    {
-      label: "Changer de branche",
-      command: "git checkout",
-      subMenu: [
-        { label: "basculer sur une branche existante", command: "git checkout" },
-        { label: "Crée une nouvelle branche et basculer dessus", command: "git branch -b" },
-        { label: "basculer sur la dernière branche ou tu te trouvrais", command: "git checkout -"}
-      ],
-    },
-    {
-      label: "git status",
-      command: "git commit",
-      subMenu: [
-        { label: "Statut détaillé, par défaut", command: "git status" },
-        { label: "Statut compact", command: "git status -s" },
-      ],
-    },
-    {
-      label: "Envoyer les modifications",
-      command: "git push",
-      subMenu: [
-        { label: "envoyer modif", command: "git push" },
-        { label: "Publier une nouvelle branche", command: "git push -u" },
-      ],
-    },
-  ];
-
-  /* on définit une fonction qui lorsqu'on l'appelle donne qui inverse la valeur de la variable showBranchMenu 
-     l'inverse de faux ==> vrai */
-
   onMount(() => {                                         // onMount est une fonction Svelte qui s'execute une seule fois lors de l'initialisation de la page, 
     const term = new Terminal({ cursorBlink: true });     // on vient créer un visuel de terminal, c'est une coquille vide ou l'on peut rien y faire à part écrire, on a seulelement le clignotement du cureur
     term.open(terminalElement);                           // on vient injecter le code du package xterm dans terminalElement, (qui pour rappel vient contenir une référence div dans la dom)
@@ -238,56 +178,19 @@ export function renderGitGraph(commits: any[]) {
 
 </script>
 
+
 <main class="container">
-  <header class="header-bar">
-    <div>
-      <h1>Actions guidées</h1>
-      <p>Projet actuel : <span class="project-path">{projectPath ?? "aucun projet selectionné"}</span></p>
-    </div>
 
-    <button class="toggle-btn" onclick={() => toggleView("actions")}>
-      pleine écran menu de sélection
-    </button>
-
-    <button class="toggle-btn" onclick={() => toggleView("tree")}>
-      pleine écran graphe visuelle
-    </button>
-
-    <button class="open-btn" onclick={selectProject}>
-      Ouvrir un projet Git
-    </button>
-  </header>
+  <Header {projectPath} {toggleView} {selectProject} />
 
   <div class="content-layout">
-    <div 
-    class="dropdown-content"
-    class:hidden={activeView === "tree"}
-    class:full-width={activeView === "actions"}
-    >
-      {#each dropdownGitActions as action}
-        <!-- on vient créer tous les boutons dans notre liste d'objets -->
-        <button
-          class="dropdown-item"
-          onclick={() => toggleMenu(action.command)}
-        >
-          {action.label}
-        </button>
 
-        {#if activeMenu === action.command && action.subMenu}
-          <div class="sub-menu">
-            {#each action.subMenu as sub}
-              <button 
-                class="sub-item" 
-                onclick={() => generateCommand(sub.command)}
-              >
-                {sub.label} ( {sub.command} )
-              </button>
-            {/each}
-          </div>
-        {/if}
-      {/each}
-    </div>
-
+    <GitActionMenu 
+      {activeView} 
+      {activeMenu} 
+      {toggleMenu} 
+      {generateCommand} 
+    />
 
     <div 
       class="tree-wrapper"
@@ -316,15 +219,6 @@ export function renderGitGraph(commits: any[]) {
     gap: 15px;
   }
 
-  h1,
-  p {
-    color: white;
-    font-weight: bold;
-    font-family: "Inter", sans-serif;
-    margin-top: 0;
-    margin-bottom: 15px;
-  }
-
   .content-layout {
     display: flex;
     flex-direction: row;
@@ -332,36 +226,6 @@ export function renderGitGraph(commits: any[]) {
     width: 100%;
     flex: 4;
     min-height: 0;
-  }
-
-  .dropdown-content {
-    background-color: #505050;
-    flex : 1;
-
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 10px;
-
-    overflow-y: auto;
-    box-sizing: border-box;
-    border-radius: 6px;
-  }
-
-  .dropdown-item {
-    width: 70%;
-    padding: 10px;
-    cursor: pointer;
-    border: none;
-    background-color: #666666;
-    color: white;
-    text-align: left;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-
-  .dropdown-item:hover {
-    background-color: #888888;
   }
 
   .tree-wrapper {
@@ -403,69 +267,6 @@ export function renderGitGraph(commits: any[]) {
     border: 1px dashed white;
   }
 
-  .sub-menu {
-    width: 70%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .sub-item {
-    border: none;
-    cursor: pointer;
-    background-color: #444444;
-    color: #dddddd;
-    padding: 10px;
-    text-align: left;
-    box-sizing: border-box; /* à spécifier sinon c'est content-box par défaut */
-  }
-
-  .sub-item:hover {
-    background-color: #555555;
-    color: white;
-  }
-
-  /* Styles pour le Header et le bouton "chosir projet"*/
-  .header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #1e1e1e;
-    padding: 15px 20px;
-    border-radius: 6px;
-    border: 1px solid #333333;
-  }
-
-  .header-bar h1 {
-    margin: 0 0 5px 0;
-  }
-
-  .header-bar p {
-    margin: 0;
-  }
-
-  .project-path {
-    color: #61afef;
-    font-family: monospace;
-  }
-
-  .open-btn, .toggle-btn{
-    background-color: #2c539e;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    font-size: 0.95rem;
-    font-weight: bold;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .open-btn:hover {
-    background-color: #3b69c4;
-  }
-
-
   .full-width {
     flex: 999;
   }
@@ -481,7 +282,6 @@ export function renderGitGraph(commits: any[]) {
     border: none !important;
   }
 
-  .dropdown-content,
   .tree-wrapper {
     flex: 1;
     opacity: 1;
