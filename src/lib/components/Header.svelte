@@ -1,5 +1,8 @@
 <script lang="ts">
-  let { projectPath, toggleView, selectProject } = $props();
+  let { projectPath, toggleView, selectProject } = $props(); 
+    // on créeer une liason unidirectionnel (du parent vers l'enfant) et pour ca on utilise un props qui s'écrit de la manière suivant let {} = $props
+    // ca permet de pointer les variable et fonctions existant dans le parent pour les utilsier directement dans ce fichier
+    // par défaut ils on ne peut pas changer leur valeur 
 </script>
 
 <header class="header-bar">
