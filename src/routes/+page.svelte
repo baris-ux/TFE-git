@@ -259,43 +259,42 @@ export function renderGitGraph(commits: any[]) {
   </header>
 
   <div class="content-layout">
-  <!-- le bloc div qu'on vient d'entouré avec la condition ne doit existe QUE SI la vue active est différent de tree donc on montre -->
-  <!-- le bloc div ne s'affiche que si la vue est en split ou alors en pleine écran (actions) -->
-    {#if activeView !== "tree"} 
-      <div class="dropdown-content">
-        {#each dropdownGitActions as action}
-          <!-- on vient créer tous les boutons dans notre liste d'objets -->
-          <button
-            class="dropdown-item"
-            onclick={() => toggleMenu(action.command)}
-          >
-            {action.label}
-          </button>
+    <div 
+    class="dropdown-content"
+    class:hidden={activeView === "tree"}
+    class:full-width={activeView === "actions"}
+    >
+      {#each dropdownGitActions as action}
+        <!-- on vient créer tous les boutons dans notre liste d'objets -->
+        <button
+          class="dropdown-item"
+          onclick={() => toggleMenu(action.command)}
+        >
+          {action.label}
+        </button>
 
-          {#if activeMenu === action.command && action.subMenu}
-            <div class="sub-menu">
-              {#each action.subMenu as sub}
-                <button 
-                  class="sub-item" 
-                  onclick={() => generateCommand(sub.command)}
-                >
-                  {sub.label} ( {sub.command} )
-                </button>
-              {/each}
-            </div>
-          {/if}
-        {/each}
-      </div>
+        {#if activeMenu === action.command && action.subMenu}
+          <div class="sub-menu">
+            {#each action.subMenu as sub}
+              <button 
+                class="sub-item" 
+                onclick={() => generateCommand(sub.command)}
+              >
+                {sub.label} ( {sub.command} )
+              </button>
+            {/each}
+          </div>
+        {/if}
+      {/each}
+    </div>
 
-    {/if}
-    <!-- la logique est la même qu'avec le dropdown-content -->
-    <!-- le bloc div doit existe uniquement si la vue est différent de actions -->
-    {#if activeView !==  "actions"}
-      <div 
-        class="tree-wrapper"
-        bind:this={gitgraphElement}
-      ></div>
-    {/if}
+
+    <div 
+      class="tree-wrapper"
+      class:hidden={activeView === "actions"}  
+      class:full-width={activeView === "tree"} 
+      bind:this={gitgraphElement} 
+    ></div>
   </div>
 
   <div bind:this={terminalElement} class="terminal-container"></div>
@@ -465,6 +464,36 @@ export function renderGitGraph(commits: any[]) {
   .open-btn:hover {
     background-color: #3b69c4;
   }
+
+
+  .full-width {
+    flex: 999;
+  }
+
+  /* -------------------------------------- IA ------------------------------------------- */
+
+  .hidden {
+    flex: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    opacity: 0;
+    pointer-events: none; /* Empêche de cliquer dessus pendant qu'il est caché */
+    border: none !important;
+  }
+
+  .dropdown-content,
+  .tree-wrapper {
+    flex: 1;
+    opacity: 1;
+    overflow: auto;
+    box-sizing: border-box;
+    border-radius: 6px;
+
+    /* 👉 AJOUTER CETTE LIGNE (Anime le flex, l'opacité et le padding) */
+    transition: flex 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-in-out, padding 0.4s ease;
+  }
+
+  /* -------------------------------------- IA ------------------------------------------- */
 
 
 
