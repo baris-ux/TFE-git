@@ -29,6 +29,8 @@
   let scrollLeft = 0;
   let scrollTop = 0;
 
+  let activeView = $state<"split" | "actions" | "tree">("split"); // cette variable va permettre de stocker la vue, écrant scinder, full écran sur le menu d'action ou alors full écran sur le graphe visuelle
+
   const myGitTheme = templateExtend(TemplateName.Metro, { // le template par défaut est metro, on a également blackarrow templateExtend() permet de créer notre propre template
     colors: [
       "#3b82f6", // bleu branche main
@@ -150,19 +152,16 @@ export function renderGitGraph(commits: any[]) {
       label: "Changer de branche",
       command: "git checkout",
       subMenu: [
-        { label: "branche local", command: "git branch" },
-        { label: "branche distant", command: "git branch -r" },
+        { label: "basculer sur une branche existante", command: "git checkout" },
+        { label: "Crée une nouvelle branche et basculer dessus", command: "git branch -b" },
+        { label: "basculer sur la dernière branche ou tu te trouvrais", command: "git checkout -"}
       ],
-    },
-    {
-      label: "Envoyer modification sur le repo distant",
-      command: "git push",
     },
     {
       label: "git status",
       command: "git commit",
       subMenu: [
-        { label: "Statut détaillé (par défaut)", command: "git status" },
+        { label: "Statut détaillé, par défaut", command: "git status" },
         { label: "Statut compact", command: "git status -s" },
       ],
     },
@@ -170,8 +169,8 @@ export function renderGitGraph(commits: any[]) {
       label: "Envoyer les modifications",
       command: "git push",
       subMenu: [
-        { label: "Push simple (branche actuelle)", command: "git push" },
-        { label: "Publier une nouvelle branche (-u)", command: "git push -u" },
+        { label: "envoyer modif", command: "git push" },
+        { label: "Publier une nouvelle branche", command: "git push -u" },
       ],
     },
   ];
@@ -227,6 +226,16 @@ export function renderGitGraph(commits: any[]) {
     }
   }
 
+
+  function toggleView(targetView: "actions" | "tree"){
+    if (activeView == targetView){ // si la vue active est actions ou tree (donc c'est la vue scindé) on vient scindé l'écran
+      activeView = "split";
+    }
+    else { // si la vue active n'est pas actions ou tree (c'est qu'il est scindé en deux) alors la vue active sera celle selectionné 
+      activeView = targetView;
+    }
+  }
+
 </script>
 
 <main class="container">
@@ -236,42 +245,57 @@ export function renderGitGraph(commits: any[]) {
       <p>Projet actuel : <span class="project-path">{projectPath ?? "aucun projet selectionné"}</span></p>
     </div>
 
+    <button class="toggle-btn" onclick={() => toggleView("actions")}>
+      pleine écran menu de sélection
+    </button>
+
+    <button class="toggle-btn" onclick={() => toggleView("tree")}>
+      pleine écran graphe visuelle
+    </button>
+
     <button class="open-btn" onclick={selectProject}>
-      
       Ouvrir un projet Git
     </button>
   </header>
 
   <div class="content-layout">
-    <div class="dropdown-content">
-      {#each dropdownGitActions as action}
-        <!-- on vient créer tous les boutons dans notre liste d'objets -->
-        <button
-          class="dropdown-item"
-          onclick={() => toggleMenu(action.command)}
-        >
-          {action.label}
-        </button>
+  <!-- le bloc div qu'on vient d'entouré avec la condition ne doit existe QUE SI la vue active est différent de tree donc on montre -->
+  <!-- le bloc div ne s'affiche que si la vue est en split ou alors en pleine écran (actions) -->
+    {#if activeView !== "tree"} 
+      <div class="dropdown-content">
+        {#each dropdownGitActions as action}
+          <!-- on vient créer tous les boutons dans notre liste d'objets -->
+          <button
+            class="dropdown-item"
+            onclick={() => toggleMenu(action.command)}
+          >
+            {action.label}
+          </button>
 
-        {#if activeMenu === action.command && action.subMenu}
-          <div class="sub-menu">
-            {#each action.subMenu as sub}
-              <button 
-                class="sub-item" 
-                onclick={() => generateCommand(sub.command)}
-              >
-                {sub.label} ( {sub.command} )
-              </button>
-            {/each}
-          </div>
-        {/if}
-      {/each}
-    </div>
+          {#if activeMenu === action.command && action.subMenu}
+            <div class="sub-menu">
+              {#each action.subMenu as sub}
+                <button 
+                  class="sub-item" 
+                  onclick={() => generateCommand(sub.command)}
+                >
+                  {sub.label} ( {sub.command} )
+                </button>
+              {/each}
+            </div>
+          {/if}
+        {/each}
+      </div>
 
-    <div 
-      class="tree-wrapper"
-      bind:this={gitgraphElement}
-    ></div>
+    {/if}
+    <!-- la logique est la même qu'avec le dropdown-content -->
+    <!-- le bloc div doit existe uniquement si la vue est différent de actions -->
+    {#if activeView !==  "actions"}
+      <div 
+        class="tree-wrapper"
+        bind:this={gitgraphElement}
+      ></div>
+    {/if}
   </div>
 
   <div bind:this={terminalElement} class="terminal-container"></div>
@@ -313,7 +337,7 @@ export function renderGitGraph(commits: any[]) {
 
   .dropdown-content {
     background-color: #505050;
-    width: 30%;
+    flex : 1;
 
     display: flex;
     flex-direction: column;
@@ -374,7 +398,7 @@ export function renderGitGraph(commits: any[]) {
   .terminal-container {
     flex: 1;
     width: 100%;
-    background-color: #000;
+    background-color: #b16666;
     border-radius: 6px;
     overflow: hidden;
     border: 1px dashed white;
@@ -426,7 +450,7 @@ export function renderGitGraph(commits: any[]) {
     font-family: monospace;
   }
 
-  .open-btn {
+  .open-btn, .toggle-btn{
     background-color: #2c539e;
     color: white;
     border: none;
@@ -441,5 +465,7 @@ export function renderGitGraph(commits: any[]) {
   .open-btn:hover {
     background-color: #3b69c4;
   }
+
+
 
 </style>
