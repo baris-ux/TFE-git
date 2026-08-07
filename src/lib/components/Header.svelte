@@ -1,14 +1,18 @@
 <script lang="ts">
-  let { projectPath, toggleView, selectProject } = $props(); 
-    // on créeer une liason unidirectionnel (du parent vers l'enfant) et pour ca on utilise un props qui s'écrit de la manière suivant let {} = $props
-    // ca permet de pointer les variable et fonctions existant dans le parent pour les utilsier directement dans ce fichier
-    // par défaut ils on ne peut pas changer leur valeur 
+  let { projectPath, toggleView, selectProject } = $props();
+  // on créeer une liason unidirectionnel (du parent vers l'enfant) et pour ca on utilise un props qui s'écrit de la manière suivant let {} = $props
+  // ca permet de pointer les variable et fonctions existant dans le parent pour les utilsier directement dans ce fichier
+  // par défaut ils on ne peut pas changer leur valeur
 </script>
 
 <header class="header-bar">
   <div>
     <h1>Actions guidées</h1>
-    <p>Projet actuel : <span class="project-path">{projectPath ?? "aucun projet sélectionné"}</span></p>
+    <p>
+      Projet actuel : <span class="project-path"
+        >{projectPath ?? "aucun projet sélectionné"}</span
+      >
+    </p>
   </div>
 
   <button class="toggle-btn" onclick={() => toggleView("actions")}>
@@ -25,7 +29,6 @@
 </header>
 
 <style>
-
   h1,
   p {
     color: white;
@@ -57,7 +60,8 @@
     font-family: monospace;
   }
 
-  .open-btn, .toggle-btn {
+  .open-btn,
+  .toggle-btn {
     background-color: #2c539e;
     color: white;
     border: none;
