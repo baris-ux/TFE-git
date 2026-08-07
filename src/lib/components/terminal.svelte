@@ -5,11 +5,8 @@
   import { FitAddon } from "@xterm/addon-fit";
   import "@xterm/xterm/css/xterm.css";
 
-  //let terminalElement = $state() as HTMLDivElement | undefined;
-  //let pty: any = $state(null);
-
   let tabs = $state<TerminalLab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
-  let activeTab = $state<string | null>(null); // cette variable contiendra l'instance du terminal sur lequel on se trouve
+  let activeTab = $state<string | null>(null); // cette variable contiendra l'ID de l'instance du terminal !!!
 
   interface TerminalLab {
     id: string; //chaque instance de terminal aura son id unique
@@ -23,6 +20,18 @@
     pty?: any; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
   }
 
+  async function selectTab(id: string) {
+    activeTab = id;
+    await tick();
+    const currentTab = tabs.find((t) => t.id === id);
+    currentTab?.fitAddon?.fit();
+  }
+
+  function deleteTab(tabId: string) {
+    let indexTabId = tabs.findIndex((tab) => tab.id === tabId); // trouve l'indice de l'objet ou l'id est égale à l'id du tab qu'on souhaite delete
+    tabs.splice(indexTabId, 1); // splice prend comme paramètre l'index et le nombre d'élément à delete dans la liste
+  }
+
   async function createTerminalInstance() {
     const newTab: TerminalLab = {
       id: crypto.randomUUID(),
@@ -32,14 +41,40 @@
     tabs.push(newTab);
     activeTab = newTab.id;
 
-    /* ---------------------------- IA ------------------------------------------------------------------------------------------- */
     await tick();
+
+    /* cette ligne de code bien que simple fut très complexe à comprendre, je vais prendre le temps de vous l'expliquer
+    await tick() est une fonction qui permet d'imterrompre l'execution pendant quelque seconde avant de reprendre son execution
+    mais alors pourquoi interrompre l'execution de la fonction createTerminalInstance ? c'est parce qu'on vient de push un objet tab dans a list tabs
+    et dans le html on va venir boucler sur cette liste pour déssiner ce tab
+    
+    En fait il faut que notre fonction soit en pause le temps d'un instant pour qu'on vient déssiner ce nouveau tab avant de poursuivre l'execution de la fonction
+    car le code qui vient a besoin qu'il soit déssiner pour qu'il s'execute correctement*/
 
     const currentTab = tabs.find((t) => t.id === newTab.id);
 
-    if (!currentTab?.element) return;
+    /* currentTab viendra contenir le terminal en elle même de ce tab sous la forme d'un objet unique 
+
+    exemple : 
+
+    {
+      "id": "3f8a...",
+      "name": "Terminal 2",
+      "pty": { ... },
+      "term": { ... }
+    }
+
+    la fonction find() permet de parcourir une liste d'objet
+    il vérifie pour chaque objet parcouru si l'id de l'objet parcouru équivaut à l'id de newTab à savoir le dernier tab crée
+    find() renvoie l'objet elle même si la condition === est true */
+
+    if (!currentTab?.element) return; //si l'objet currentTab (le terminal) n'a pas l'attrbit/clé element ('c'est qu'il n'est pas déssiné par svelte dans la DOM
+    // ) dans ce cas on arrête l'execution de la fonction avec un return
+
+    /* ---------------------------- IA ---------------------------------------------------------------------------------------------------*/
 
     const term = new Terminal({
+      // on définit le terminal avec le fonction new Terminal
       cursorBlink: true,
       scrollOnUserInput: true,
     });
@@ -53,7 +88,7 @@
     const pty = spawn("bash", [], { cols: term.cols, rows: term.rows });
 
     term.onData((data) => pty.write(data));
-    pty.onData((data: string) => {
+    pty.onData((data: Uint8Array) => {
       term.write(data, () => {
         term.scrollToBottom();
       });
@@ -123,18 +158,26 @@
     <div class="tabs-header">
       <!-- on vient boucler sur la liste tabs pour afficher tout les tab disponible dans la liste, chacun des éléments s'appelant tab -->
       {#each tabs as tab (tab.id)}
-        <button
-          class="tab-button {activeTab === tab.id ? 'active' : ''}"
-          onclick={() => {
-            activeTab = tab.id;
-            tab.fitAddon?.fit();
-          }}
+        <div
+          class="tab"
+          class:active={tab.id === activeTab}
+          onclick={() => (activeTab = tab.id)}
+          // pour se débarasser du warning, car un <div> n'est pas censé être cliquable
+          role="button"
+          tabindex="0"
+          onkeydown={(e) =>
+            (e.key === "Enter" || e.key === " ") && selectTab(tab.id)}
         >
-          {tab.name}
-        </button>
+          <span>{tab.name}</span>
+          <button class="close-btn" onclick={() => deleteTab(tab.id)}>
+            &times;
+          </button>
+        </div>
       {/each}
     </div>
-    <button onclick={createTerminalInstance}> + Ajouter un bash </button>
+    <button class="add-tab-button" onclick={createTerminalInstance}>
+      + Ajouter un bash
+    </button>
   </div>
 
   <!-- IA -->
@@ -168,7 +211,6 @@
   }
 
   .terminal-container {
-    /*border-radius: 6px;*/
     flex: 1;
     overflow: hidden;
     border: 1px dashed white;
@@ -179,23 +221,47 @@
     flex-direction: row;
   }
 
-  .tab-button {
-    background-color: rgb(221, 207, 191);
-    padding: 8px 20px;
-    border: none;
-    cursor: pointer;
-  }
-
-  .tab-button:hover {
-    background-color: rgb(119, 102, 83);
-  }
-  .active {
-    background-color: rgb(172, 172, 172);
-  }
-
   .terminal-body {
     flex: 1;
     display: flex;
     flex-direction: column;
+  }
+
+  .tab,
+  .add-tab-button {
+    background-color: #252526;
+    color: #999999;
+    padding: 8px 16px;
+    border: none;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+    cursor: pointer;
+  }
+
+  .tab:hover,
+  .add-tab-button {
+    background-color: #2a2d2e;
+    color: #cccccc;
+  }
+  .active {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border-top: 2px solid #007acc;
+  }
+
+  .close-btn {
+    border: none;
+    cursor: pointer;
+    color: #888888;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 14px;
+    transition: all 0.15s ease;
+  }
+
+  .close-btn:hover {
+    background-color: #c72e2e;
+    color: #ffffff;
   }
 </style>
