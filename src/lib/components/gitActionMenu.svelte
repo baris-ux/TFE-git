@@ -25,8 +25,8 @@
 </script>
 
 <div 
-  class="dropdown-content"
-  class:hidden={activeView === "tree"}
+  class="dropdown-content" // dropdown-content est le conteneur qui va contenir, notre liste d'action guidé, les "sous actions" ainsi que la fiche d'information
+  class:hidden={activeView === "tree"} 
   class:full-width={activeView === "actions"}
 >
   <div class = "menu-list"> 
@@ -104,7 +104,6 @@
   }
 
   .dropdown-item {
-    /* width: 70%; */
     padding: 10px;
     cursor: pointer;
     border: none;
@@ -127,7 +126,6 @@
   }
 
   .sub-menu {
-    /* width: 70%; */
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -191,6 +189,16 @@
 
       flex : 1;
     }
-  
+
+
+  .hidden {
+    flex: 0;
+    width: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    border: none;
+  }
+
 
 </style>

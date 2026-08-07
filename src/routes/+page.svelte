@@ -11,6 +11,7 @@
   import GitGraph from "$lib/components/gitGraph.svelte";
 
   import { type CommitInfo } from "$lib/config/GitActionsMenu";
+  import { FitAddon } from "@xterm/addon-fit";
 
 
   let terminalElement: HTMLDivElement;
@@ -74,14 +75,31 @@
   }
 
   onMount(() => {                                           // onMount est une fonction Svelte qui s'execute une seule fois lors de l'initialisation de la page, 
-      const term = new Terminal({ cursorBlink: true });     // on vient créer un visuel de terminal, c'est une coquille vide ou l'on peut rien y faire à part écrire, on a seulelement le clignotement du cureur
-      term.open(terminalElement);                           // on vient injecter le code du package xterm dans terminalElement, (qui pour rappel vient contenir une référence div dans la dom)
+      const term = new Terminal({ 
+        cursorBlink: true,
+        scrollOnUserInput: true,                            // important à spécifier ca il va descendre automatiquement quand on entre une commande 
+      }); 
       
-      pty = spawn("bash", [], { cols: term.cols, rows: term.rows }); // on vient générer le programme bash de notre OS, [] spécifie les options au démaragge du bash ici rien pour un démarage du bash par défaut 
+      const fitAddon = new FitAddon();                      // on vient initaliser le "connecteur"
+      
+      term.loadAddon(fitAddon);                             /*le .loadAddon c'est une méthode du package xterm, 
+                                                              elle permet d'ajout des extension/plugin c'est à dire des package secondaire de cette même bibliothèque javascript xtxerm 
+                                                              ici en l'occurence on ajoute le plugin fitadon  qu'on a défiint plutot*/
+
+      term.open(terminalElement);                           // on vient injecter le code du package xterm dans terminalElement, (qui pour rappel vient contenir une référence div dans la dom)
+
+
+      fitAddon.fit();                                       // cette ligne vient calculer le nombre de ligne et de colonne en fonction du <div> 
+                                                            // dans lequel, sans cette ligne xterm permet 24 par défaut                    
+      
+      pty = spawn("bash", [], { cols: term.cols, rows: term.rows });  // on vient générer le programme bash de notre OS, 
+                                                                      // [] spécifie les options au démarage du bash ici rien pour un démarage du bash par défaut 
       
       term.onData((data) => pty.write(data));               // quand on vient taper des caractère elles sont dorénavent transmit au pty. il s'active même une fois que la fonction onMount est finei
       pty.onData((data: string) => {                        // onData permet d'écouter l'arrivé de donnée, à l'arrivé on execute une fonction
-        term.write(data);                                   // on écrit dans le composant xterm le résutlat renvoyé par le bash
+        term.write(data, () =>{                             // on écrit dans le composant xterm le résutlat renvoyé par le bash
+          term.scrollToBottom();                            
+        });                                   
       })
     }
   );

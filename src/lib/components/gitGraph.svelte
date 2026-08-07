@@ -95,17 +95,13 @@
     cursor: grabbing;
 }
 
-.full-width {
-  flex: 999;
-}
-
 .hidden {
-  flex: 0 !important;
-  width: 0 !important;
-  padding: 0 !important;
+  flex: 0;
+  width: 0;
+  padding: 0;
   opacity: 0;
   pointer-events: none;
-  border: none !important;
+  border: none;
 }
 
 </style>
