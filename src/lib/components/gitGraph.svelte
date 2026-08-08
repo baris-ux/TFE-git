@@ -104,5 +104,5 @@
     border: none;
   }
 
-  /* ajout commentaire pour test la mise à jours de gitgraph*/
+  /* ajout commentaire pour test la mise à jours de gitgraph test*/
 </style>

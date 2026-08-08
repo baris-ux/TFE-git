@@ -92,7 +92,7 @@
     <GitGraph {activeView} {commits} />
   </div>
 
-  <Terminal />
+  <Terminal loadGitHistory={() => projectPath && loadGitHistory(projectPath)} />
 </main>
 
 <style>

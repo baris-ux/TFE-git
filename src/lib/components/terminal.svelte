@@ -92,6 +92,9 @@
       pty.write(data);
 
       if (data === "\r") {
+        setTimeout(() => {
+          loadGitHistory?.();
+        }, 400);
       }
     });
 
