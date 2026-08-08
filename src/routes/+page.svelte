@@ -48,7 +48,6 @@
 
   async function loadGitHistory(path: string) {
     // cette fonction permet uniquement de vérfier si le dossier sélectionné est un projet git
-    console.log("Project selectionné : ", path);
 
     try {
       const isRepo = await invoke<boolean>("if_git_repository", { path }); // on récupère le résultat de la fonction rust sous forme de booleen

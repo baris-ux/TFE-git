@@ -7,6 +7,7 @@
 
   let tabs = $state<TerminalLab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
   let activeTab = $state<string | null>(null); // cette variable contiendra l'ID de l'instance du terminal !!!
+  let { loadGitHistory } = $props();
 
   interface TerminalLab {
     id: string; //chaque instance de terminal aura son id unique
@@ -87,7 +88,13 @@
 
     const pty = spawn("bash", [], { cols: term.cols, rows: term.rows });
 
-    term.onData((data) => pty.write(data));
+    term.onData((data) => {
+      pty.write(data);
+
+      if (data === "\r") {
+      }
+    });
+
     pty.onData((data: Uint8Array) => {
       term.write(data, () => {
         term.scrollToBottom();
@@ -102,9 +109,16 @@
   }
 
   export function sendCommand(command: string) {
-    const currentTab = tabs.find((t) => t.id === activeTab);
+    const currentTab = tabs.find((t) => t.id === activeTab); // dans l'array do'bjet tabs cherche une corresspondence entre l'id de l'objet et activeTab (c'est un id)
     if (currentTab?.pty) {
+      // si currentTab existe ET que l'attribut pty existe
       currentTab.pty.write(`${command}\n`);
+
+      setTimeout(() => {
+        if (loadGitHistory) {
+          loadGitHistory();
+        }
+      }, 400);
     }
   }
 
