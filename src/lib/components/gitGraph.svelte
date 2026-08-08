@@ -103,4 +103,6 @@
     pointer-events: none;
     border: none;
   }
+
+  /* ajout commentaire pour test la mise à jours de gitgraph*/
 </style>

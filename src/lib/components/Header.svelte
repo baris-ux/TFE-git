@@ -15,17 +15,19 @@
     </p>
   </div>
 
-  <button class="toggle-btn" onclick={() => toggleView("actions")}>
-    plein écran menu de sélection
-  </button>
+  <div class="button-list">
+    <button class="toggle-btn" onclick={() => toggleView("actions")}>
+      plein écran menu de sélection
+    </button>
 
-  <button class="toggle-btn" onclick={() => toggleView("tree")}>
-    plein écran graphe visuel
-  </button>
+    <button class="toggle-btn" onclick={() => toggleView("tree")}>
+      plein écran graphe visuel
+    </button>
 
-  <button class="open-btn" onclick={selectProject}>
-    Ouvrir un projet Git
-  </button>
+    <button class="open-btn" onclick={selectProject}>
+      Ouvrir un projet Git
+    </button>
+  </div>
 </header>
 
 <style>
@@ -60,6 +62,12 @@
     font-family: monospace;
   }
 
+  .button-list {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+  }
+
   .open-btn,
   .toggle-btn {
     background-color: #2c539e;
@@ -73,7 +81,8 @@
     transition: background-color 0.2s;
   }
 
-  .open-btn:hover {
+  .open-btn:hover,
+  .toggle-btn:hover {
     background-color: #3b69c4;
   }
 </style>
