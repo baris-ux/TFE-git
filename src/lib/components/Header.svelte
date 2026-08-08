@@ -81,6 +81,7 @@
     font-weight: bold;
     border-radius: 4px;
     cursor: pointer;
+    text-decoration: none;
     transition: background-color 0.2s;
   }
 
