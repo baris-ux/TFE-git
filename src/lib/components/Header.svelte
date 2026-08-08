@@ -27,6 +27,8 @@
     <button class="open-btn" onclick={selectProject}>
       Ouvrir un projet Git
     </button>
+
+    <a href="/sandbox" class="sandbox-btn"> mode bac à sable ⛱️ </a>
   </div>
 </header>
 
@@ -69,7 +71,8 @@
   }
 
   .open-btn,
-  .toggle-btn {
+  .toggle-btn,
+  .sandbox-btn {
     background-color: #2c539e;
     color: white;
     border: none;

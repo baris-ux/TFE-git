@@ -1,5 +1,6 @@
 use git2::Repository;
 use serde::Serialize; // import qui permet d'utiliser #[derive(Serialize)]
+use std::process::Command;
 
 #[derive(Serialize)]
 pub struct CommitInfo {
@@ -10,10 +11,35 @@ pub struct CommitInfo {
     pub branches: Vec<String>,
 }
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn verify_tutorial_step(tutorial_id: String, step_index: usize) -> Result<bool, String> {
+    match tutorial_id.as_str() {     // tutorial id est un string qu'on convertit en &str, différence entre string et &str est que &str pointe 
+        "exo-1" => match step_index { // si tutorial_id  corresspond à exo-1
+            0 => { 
+                if let Some(desktop) = dirs::desktop_dir() { // j'ai utilisé le package dirs, il renvoie Some(dossier) ou none 
+                    let dossier_test = desktop.join("test");
+                    Ok(dossier_test.exists() && dossier_test.is_dir())
+                } else {
+                    Ok(false)
+                }
+            }
+            _ => Ok(false),
+        },
+        _ => Err("Tutoriel inconnu".into()),
+    }
+}
+
+#[tauri::command]
+fn verify_if_git_installed() -> bool{
+    let output = Command::new("git")
+    .arg("--version")
+    .output(); // renvoie un type Result, 2 états possible OK(valeur) Err(valeur) qui sont tout les deux dans des boites fermé
+
+    match output { // output permet d'ouvrir cette "boite"
+        Ok(res) => res.status.success(),
+        Err(_) => false
+    }
 }
 
 #[tauri::command]
@@ -104,7 +130,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_pty::init()) // ajout du plugin pty permettant de demander à l'os de créer un pseudo terminal
         .plugin(tauri_plugin_dialog::init()) // ajout du plugin dialog permettant d'ouvrir l'explorateur de fichiers de l'os
-        .invoke_handler(tauri::generate_handler![greet, if_git_repository, get_git])
+        .invoke_handler(tauri::generate_handler![if_git_repository, get_git, verify_tutorial_step, verify_if_git_installed])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
