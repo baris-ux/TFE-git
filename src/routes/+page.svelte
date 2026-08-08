@@ -1,10 +1,16 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
+  import { openUrl } from "@tauri-apps/plugin-opener";
 
   let isGitInstalled = $state<boolean | null>(null);
 
   async function verification_if_git_installed() {
     isGitInstalled = await invoke<boolean>("verify_if_git_installed");
+  }
+
+  async function openGitWebsites(event: MouseEvent) {
+    event.preventDefault();
+    await openUrl("https://git-scm.com/install/");
   }
 </script>
 
@@ -14,14 +20,27 @@
     machine
   </h1>
 
-  <button onclick={verification_if_git_installed}
-    >vérifier si git est présent</button
-  >
-  {#if isGitInstalled === true}
+  {#if isGitInstalled === null}
+    <button class="verification-btn" onclick={verification_if_git_installed}>
+      vérifier si git est présent
+    </button>
+  {:else if isGitInstalled === true}
     <p class="success">git est bien présent sur votre machine !</p>
     <a href="/app" class="start-btn">Commencez !</a>
   {:else if isGitInstalled === false}
-    <p class="error">git n'est pas présent sur votre machine ...</p>
+    <div class="container-fail-case">
+      <p class="error">git n'est pas présent sur votre machine ...</p>
+      <button class="verification-btn" onclick={verification_if_git_installed}>
+        revérifier
+      </button>
+      <a
+        href="https://git-scm.com/install"
+        class="redirection-btn"
+        onclick={openGitWebsites}
+      >
+        installer git
+      </a>
+    </div>
   {/if}
 </main>
 
@@ -55,29 +74,29 @@
     line-height: 1.4;
   }
 
-  button {
-    background-color: #238636;
-    color: #ffffff;
-    border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  .container-fail-case {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
 
-  button:hover {
-    background-color: #2ea043;
-  }
-
-  .start-btn {
-    background-color: #2ea043;
+  .start-btn,
+  .redirection-btn,
+  .verification-btn {
     color: white;
     border: none;
     padding: 12px 24px;
     cursor: pointer; /* ai je vraiment besoin d'expliquer ... */
     text-decoration: none; /* pour retirer le soulignement */
+  }
+  .start-btn {
+    background-color: #2ea043;
+  }
+  .verification-btn {
+    background-color: rgb(219, 71, 71);
+  }
+  .redirection-btn {
+    background-color: rgb(46, 76, 160);
   }
 
   p {

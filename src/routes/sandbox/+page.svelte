@@ -38,7 +38,7 @@
 <main class="sandbox-container">
   <div class="content-wrapper">
     {#if selectedTutorial === null}
-      <a href="/app" class="back-link">← Retour</a>
+      <a href="/app" class="back-button">Retour</a>
 
       <header>
         <h1>Mode Bac à Sable ⛱️</h1>
@@ -248,6 +248,22 @@
     margin-top: 10px;
     border: none;
     border-radius: 5px;
+  }
+
+  .back-button {
+    background-color: rgb(190, 190, 190);
+    border: none;
+    padding: 10px 24px;
+    text-decoration: none;
+
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease;
+  }
+
+  .back-button:hover {
+    background-color: #fff7d1;
   }
 
   .error-message {
