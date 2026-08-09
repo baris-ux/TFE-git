@@ -153,7 +153,7 @@
   .tuto-card {
     background: #313244;
     border: 1px solid #45475a;
-    border-radius: 12px;
+    /*border-radius: 12px;*/
     padding: 20px;
     text-align: left;
     cursor: pointer;
@@ -180,7 +180,7 @@
   .badge {
     font-size: 0.75rem;
     padding: 4px 8px;
-    border-radius: 12px;
+    /*border-radius: 12px;*/
     font-weight: bold;
   }
 
