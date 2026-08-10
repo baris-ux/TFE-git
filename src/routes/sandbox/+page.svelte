@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tutos, type Tutorial } from "$lib/config/tutorials";
+  import { exercices, type Exercice } from "$lib/config/exercices";
   import Terminal from "$lib/components/terminal.svelte";
   import { invoke } from "@tauri-apps/api/core";
 
@@ -7,10 +8,29 @@
   let currentStepIndex = $state<number>(0);
   let totalAmountOfSteps = $derived(selectedTutorial?.instruction.length ?? 0);
 
+  let selectedExercice = $state<Exercice | null>(null);
+
   let resultat = $state<boolean | null>(null);
 
   async function startTutorial(tuto: Tutorial) {
     selectedTutorial = tuto;
+  }
+
+  async function startExercise(exercice: Exercice) {
+    selectedExercice = exercice;
+    try {
+      // 1. On envoie exercice.id (ex: "exo-fusion-simple")
+      // Note : Tauri convertit automatiquement setupCommands (JS) en setup_commands (Rust)
+      const folderPath = await invoke<string>("setup_exercise_repo", {
+        setupCommands: exercice.setupCommands,
+        id: exercice.id,
+      });
+
+      console.log("Dossier créé avec succès ici :", folderPath);
+    } catch (error) {
+      // 2. Si une commande (ex: git ou echo) échoue dans Rust, l'erreur s'affichera ici !
+      console.error("Échec de la création du dépôt :", error);
+    }
   }
 
   async function answerVerification() {
@@ -37,7 +57,8 @@
 
 <main class="sandbox-container">
   <div class="content-wrapper">
-    {#if selectedTutorial === null}
+    <!-- SI on a ni selectionné un tutoriel ni un exercice on vient afficher le menu de la page-->
+    {#if selectedTutorial === null && selectedExercice === null}
       <a href="/app" class="back-button">Retour</a>
 
       <header>
@@ -60,14 +81,23 @@
           </button>
         {/each}
       </div>
-    {:else}
+
+      <div class="exercice-grid">
+        {#each exercices as exo (exo.id)}
+          <button class="exercice-card" onclick={() => startExercise(exo)}>
+            {exo.title}
+          </button>
+        {/each}
+      </div>
+      <!-- si on a cliqué sur un tutoriel on va venir l'affiché-->
+    {:else if selectedTutorial !== null}
       <div class="tutorial-lesson-container">
         <header class="exercise-header">
           <h1>{selectedTutorial.title}</h1>
           <p class="subtitle">{selectedTutorial.description}</p>
         </header>
 
-        <div class="exercise-workspace">
+        <div class="tutorial-workspace">
           {#if currentStepIndex < totalAmountOfSteps}
             <p class="subtitle">
               {selectedTutorial.instruction[currentStepIndex]}
@@ -94,9 +124,7 @@
             </button>
           {/if}
 
-          <button class="quit-btn" onclick={quitTutorial}>
-            Choisir un autre tutoriel
-          </button>
+          <button class="quit-btn" onclick={quitTutorial}> Quitter </button>
         </div>
 
         {#if resultat === false}
@@ -104,6 +132,11 @@
         {:else if resultat === true}
           <p class="sucess-message">Correct</p>
         {/if}
+      </div>
+      <!-- s'affiche uniquement si on à choisit un exercice -->
+    {:else if selectedExercice !== null}
+      <div class="exercice-container">
+        <p>{selectedExercice.title}</p>
       </div>
     {/if}
   </div>
@@ -152,8 +185,7 @@
 
   .tuto-card {
     background: #313244;
-    border: 1px solid #45475a;
-    /*border-radius: 12px;*/
+    border: none;
     padding: 20px;
     text-align: left;
     cursor: pointer;
@@ -167,6 +199,20 @@
     transform: translateY(-4px);
     border-color: #89b4fa;
     background: #3b3d54;
+    border: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .exercice-card {
+    cursor: pointer;
+    background-color: rgb(241, 202, 115);
+    border: none;
+    padding: 20px;
+  }
+
+  .exercice-card:hover {
+    transform: translateY(-4px);
+    border: none;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   }
 
@@ -218,7 +264,7 @@
     font-size: 0.85rem;
   }
 
-  .exercise-workspace {
+  .tutorial-workspace {
     background: #313244;
     border: 1px solid #45475a;
     border-radius: 12px;
