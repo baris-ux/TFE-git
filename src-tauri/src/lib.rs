@@ -77,8 +77,8 @@ fn verify_tutorial_step(tutorial_id: String, step_index: usize) -> Result<bool, 
 
 #[tauri::command]
 fn verify_if_git_installed() -> bool{
-    let output = Command::new("git")
-    .arg("--version")
+    let output = Command::new("git") // execution du programme git 
+    .arg("--version") // on passe en argument à la commande git, --version
     .output(); // renvoie un type Result, 2 états possible OK(valeur) Err(valeur) qui sont tout les deux dans des boites fermé
 
     match output { // output permet d'ouvrir cette "boite"
