@@ -3,7 +3,7 @@ export interface Exercice {
   title: string;
   description: string;
   difficulty: "Débutant" | "Intermédiaire" | "Avancé";
-  setupCommands: string[];
+  setupCommands: string[][]; // [][] pour tableau de tableau
   instruction: string[];
 }
 
@@ -15,12 +15,15 @@ export const exercices: Exercice[] = [
       "Rapatriez le travail terminé de la branche 'feature' vers la branche principale 'main'.",
     difficulty: "Débutant",
     setupCommands: [
-      "git init",
-      "git add README.md", // Le fichier aura été créé par Rust juste avant !
-      "git commit -m 'Initial commit'",
-      "git checkout -b feature",
-      "git commit -am 'feat: nouvelle option'",
-      "git checkout main",
+      ["git", "init", "-b", "main"],
+      ["touch", "README.md"], // <-- 1. Crée le fichier sur Linux/macOS
+      ["git", "add", "README.md"], // <-- 2. Maintenant Git le trouve !
+      ["git", "commit", "-m", "Initial commit"],
+      ["git", "checkout", "-b", "feature"],
+      ["touch", "feature.txt"], // <-- Crée un fichier pour la branche feature
+      ["git", "add", "."],
+      ["git", "commit", "-m", "feat: nouvelle option"],
+      ["git", "checkout", "main"],
     ],
     instruction: [
       "Assurez-vous d'être placé sur la branche 'main'.",

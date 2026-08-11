@@ -14,7 +14,7 @@ pub struct CommitInfo {
 
 #[tauri::command]
 fn setup_exercise_repo(
-    setup_commands : Vec<String>, // ajout du underscore _ pour éviter le warning de non utilisation 
+    setup_commands : Vec<Vec<String>>, // array d'array contenant string
     id: String
 ) -> Result<String, String> { // vec pour vector, un tableau dynamique qui contient des chaine de caractère
 
@@ -34,23 +34,20 @@ fn setup_exercise_repo(
     // l'idée ici est qu'on va venir boucler sur setupCommands car il s'agit d'une liste de commande git pour venir les executer un à un
     // 
 
-    for cmd in setup_commands {
-        let parts: Vec<&str> = cmd.split_whitespace().collect(); // la commande git on va le split pour couper les espaces avec la fonction split_whitespace() 
-                                                                // puis on utilise la fonction .collect qui va mettre les élément dans un liste 
-                                                                // par exemple git commit -m "essais" ==> ["git", "commit", "-m", "essais"]
+    for cmd in setup_commands { // on parcour notre array d'array, cmd étant un array
 
-        let program = parts[0]; // à l'indice 0 on trouvera le mot git
-        let args = &parts[1..]; // à partir d' lindice 1 (donc les argument comme commit, push, checkout ...) jusqu'au dernier élément de la liste
+        let program = &cmd[0]; // à l'indice 0 on trouvera le mot git
+        let args = &cmd[1..]; // à partir d' lindice 1 (donc les argument comme commit, push, checkout ...) jusqu'au dernier élément de la liste
 
         let output = Command::new(program) // execution du programme, ici git 
         .args(args)
         .current_dir(&desktop_path)
         .output()
-        .map_err(|e| format!("Impossible de lancer '{}': {}", cmd, e))?;
+        .map_err(|e| format!("Impossible de lancer '{}': {}", program, e))?; // on met program, qui est un string
 
         if !output.status.success() { // si le output n'a pas pour status succès renvoie un vrai
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Erreur lors de l'exécution de '{}' : {}", cmd, stderr));
+            return Err(format!("Erreur lors de l'exécution de '{}' : {}", program, stderr));
         }
     }
     Ok(desktop_path.to_string_lossy().into_owned())

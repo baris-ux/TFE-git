@@ -17,19 +17,19 @@
   }
 
   async function startExercise(exercice: Exercice) {
+    console.log("1. Bouton cliqué ! Exercice :", exercice.id);
     selectedExercice = exercice;
+
     try {
-      // 1. On envoie exercice.id (ex: "exo-fusion-simple")
-      // Note : Tauri convertit automatiquement setupCommands (JS) en setup_commands (Rust)
+      console.log("2. Envoi de la commande à Rust...");
       const folderPath = await invoke<string>("setup_exercise_repo", {
         setupCommands: exercice.setupCommands,
         id: exercice.id,
       });
 
-      console.log("Dossier créé avec succès ici :", folderPath);
+      console.log("3. Succès ! Dossier créé à :", folderPath);
     } catch (error) {
-      // 2. Si une commande (ex: git ou echo) échoue dans Rust, l'erreur s'affichera ici !
-      console.error("Échec de la création du dépôt :", error);
+      console.error("❌ Erreur côté Rust :", error);
     }
   }
 
