@@ -19,6 +19,9 @@
     // il faut que chaque instance a cette clé car chaque terminal a besoin que le nombre de ligne et colonne s'adaptent au div parent
 
     pty?: any; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
+
+    resizeObserver?: ResizeObserver; // un écouteur d'évènement,
+    // il est déja intégré dans le navigateur pas besoin de l'installer on vient faire une déclaration de type
   }
 
   async function selectTab(id: string) {
@@ -30,6 +33,7 @@
 
   function deleteTab(tabId: string) {
     let indexTabId = tabs.findIndex((tab) => tab.id === tabId); // trouve l'indice de l'objet ou l'id est égale à l'id du tab qu'on souhaite delete
+    tabs[indexTabId]?.resizeObserver?.disconnect();
     tabs.splice(indexTabId, 1); // splice prend comme paramètre l'index et le nombre d'élément à delete dans la liste
   }
 
@@ -98,15 +102,30 @@
       }
     });
 
+    // quand fitAddon.fit() recalcule les colonnes/lignes suite à un resize du <div>,
+    // il faut aussi prévenir le pty sinon bash continue de croire à l'ancienne taille
+    term.onResize(({ cols, rows }) => {
+      pty.resize(cols, rows);
+    });
+
     pty.onData((data: Uint8Array) => {
       term.write(data, () => {
         term.scrollToBottom();
       });
     });
 
+    const resizeObserver = new ResizeObserver(() => {
+      // on déclare le détecteur
+      if (activeTab === newTab.id) {
+        fitAddon.fit();
+      }
+    });
+    resizeObserver.observe(currentTab.element);
+
     currentTab.term = term;
     currentTab.fitAddon = fitAddon;
     currentTab.pty = pty;
+    currentTab.resizeObserver = resizeObserver;
 
     /* ---------------------------- IA ---------------------------------------------------------------------------------------------------*/
   }
