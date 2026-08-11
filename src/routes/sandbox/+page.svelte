@@ -51,6 +51,7 @@
 
   function quitTutorial() {
     selectedTutorial = null;
+    selectedExercice = null;
     resultat = null;
   }
 </script>
@@ -66,29 +67,40 @@
         <p class="subtitle">Sélectionnez un module</p>
       </header>
 
-      <div class="tutorial-grid">
-        <!-- on vient parcourir un array d'objet -->
-        {#each tutos as tuto (tuto.id)}
-          <!-- on passe l'objet tuto en paramètre-->
-          <button class="tuto-card" onclick={() => startTutorial(tuto)}>
-            <div class="card-header">
-              <span class="badge {tuto.difficulty.toLowerCase()}"
-                >{tuto.difficulty}</span
-              >
-            </div>
-            <h3>{tuto.title}</h3>
-            <p>{tuto.description}</p>
-          </button>
-        {/each}
+      <div class="module-selection">
+        <h2>Tutoriels Guidés</h2>
+        <div class="tutorial-grid">
+          <!-- on vient parcourir un array d'objet -->
+          {#each tutos as tuto (tuto.id)}
+            <!-- on passe l'objet tuto en paramètre-->
+            <button class="tuto-card" onclick={() => startTutorial(tuto)}>
+              <div class="card-header">
+                <span class="badge {tuto.difficulty.toLowerCase()}"
+                  >{tuto.difficulty}</span
+                >
+              </div>
+              <h3>{tuto.title}</h3>
+              <p>{tuto.description}</p>
+            </button>
+          {/each}
+        </div>
+
+        <h2>Exercice</h2>
+        <div class="exercice-grid">
+          {#each exercices as exo (exo.id)}
+            <button class="exercice-card" onclick={() => startExercise(exo)}>
+              <div class="card-header">
+                <span class="badge {exo.difficulty.toLowerCase()}">
+                  {exo.difficulty}
+                </span>
+              </div>
+              <h3>{exo.title}</h3>
+              <p>{exo.description}</p>
+            </button>
+          {/each}
+        </div>
       </div>
 
-      <div class="exercice-grid">
-        {#each exercices as exo (exo.id)}
-          <button class="exercice-card" onclick={() => startExercise(exo)}>
-            {exo.title}
-          </button>
-        {/each}
-      </div>
       <!-- si on a cliqué sur un tutoriel on va venir l'affiché-->
     {:else if selectedTutorial !== null}
       <div class="tutorial-lesson-container">
@@ -112,6 +124,12 @@
 
         <Terminal />
 
+        {#if resultat === false}
+          <p class="error-message">L'étape n'est pas validée. Réessayez !</p>
+        {:else if resultat === true}
+          <p class="success-message">Étape validée avec succès !</p>
+        {/if}
+
         <div class="button-below-exercice">
           {#if resultat === true}
             <button class="validate-btn" onclick={() => nextStep()}>
@@ -126,17 +144,18 @@
 
           <button class="quit-btn" onclick={quitTutorial}> Quitter </button>
         </div>
-
-        {#if resultat === false}
-          <p class="error-message">l'étape n'est pas validé</p>
-        {:else if resultat === true}
-          <p class="sucess-message">Correct</p>
-        {/if}
       </div>
       <!-- s'affiche uniquement si on à choisit un exercice -->
     {:else if selectedExercice !== null}
       <div class="exercice-container">
-        <p>{selectedExercice.title}</p>
+        <h1>{selectedExercice.title}</h1>
+        <Terminal />
+
+        <div class="button-below-exercice">
+          <button class="quit-btn" onclick={() => (selectedExercice = null)}>
+            Quitter
+          </button>
+        </div>
       </div>
     {/if}
   </div>
@@ -153,6 +172,13 @@
     min-height: 100vh;
     box-sizing: border-box;
     color: #cdd6f4;
+  }
+
+  .module-selection {
+    /* le conteneur qui contient l'ensemble du menu avec tuto et exercices */
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
   }
 
   .tutorial-lesson-container {
@@ -183,7 +209,8 @@
     gap: 20px;
   }
 
-  .tuto-card {
+  .tuto-card,
+  .exercice-card {
     background: #313244;
     border: none;
     padding: 20px;
@@ -204,10 +231,7 @@
   }
 
   .exercice-card {
-    cursor: pointer;
-    background-color: rgb(241, 202, 115);
-    border: none;
-    padding: 20px;
+    border-left: 4px solid #fab387;
   }
 
   .exercice-card:hover {
@@ -281,10 +305,14 @@
 
   .quit-btn {
     background-color: #f38ba8;
+    color: #11111b;
+    font-weight: bold;
   }
 
   .validate-btn {
     background-color: #379792;
+    color: #ffffff;
+    font-weight: bold;
   }
 
   .validate-btn,
@@ -313,8 +341,22 @@
   }
 
   .error-message {
-    background-color: rgb(207, 101, 101);
-    padding: 10px;
-    border-radius: 5px;
+    background-color: rgba(243, 139, 168, 0.2);
+    border: 1px solid #f38ba8;
+    color: #f38ba8;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 0;
+    font-weight: bold;
+  }
+
+  .success-message {
+    background-color: rgba(166, 227, 161, 0.2);
+    border: 1px solid #a6e3a1;
+    color: #a6e3a1;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 0;
+    font-weight: bold;
   }
 </style>
