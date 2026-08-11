@@ -3,13 +3,15 @@ use serde::Serialize; // import qui permet d'utiliser #[derive(Serialize)]
 use std::process::Command;
 use std::fs; // pour créer un folder
 
+use std::collections::HashMap;
+
 #[derive(Serialize)]
 pub struct CommitInfo {
     pub id: String,
     pub message: String,
     pub author: String,
     pub parents: Vec<String>,
-    pub branches: Vec<String>,
+    pub branches: Vec<String>, //
 }
 
 #[tauri::command]
@@ -99,9 +101,9 @@ async fn if_git_repository(path : String) -> bool {
 }
 
 #[tauri::command]
-fn get_git(path : String) -> Result<Vec<CommitInfo>, String> {
-    let repo = Repository::open(&path).map_err(|e| e.to_string())?; 
-    
+fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
+    let repo = Repository::open(&path).map_err(|e| e.to_string())?;
+
     /* Repository::open(&path) tente d'ouvrir le dossier Git dans le chemin fournit, le &path permet de récupérer le path au lieu de créer un doublon du path fournit 
     
     .map_err(|e| e.to_string()) vient permettre de à ce que Repository::open(&path) l'erreur (sous forme de structure git2::Error) 
@@ -110,9 +112,27 @@ fn get_git(path : String) -> Result<Vec<CommitInfo>, String> {
     le ? à la fin permet à ce que la variable repo se voit attribué la valeur du dépot uniquement si 
     Repository::open(&path) a comme résultat git2::Ok, en cas de git2::Error pas de valeur attribué*/
 
+    let mut map_branches: HashMap<String, Vec<String>> = HashMap::new();
+
+    // <String, Vec<String>> ==> string c'est le type que doit avoir la clé, par exemple "b70odZé034mpn"
+    // vec<string> à droite, doit être un array de string, chaque item dans cet liste correspond à une branche par exemple ["main", "feature/ui"]
+
+    /* -------------------------- IA ----------------------------- */
+    if let Ok(branches) = repo.branches(Some(git2::BranchType::Local)) {
+        for b in branches.flatten() {
+            let (branch, _) = b;
+            if let (Ok(Some(nom)), Some(target)) = (branch.name(), branch.get().target()) {
+                map_branches
+                    .entry(target.to_string())
+                    .or_default()
+                    .push(nom.to_string());
+            }
+        }
+    }
+    /* -------------------------- IA ----------------------------- */
 
     let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
-    revwalk.push_head().map_err(|e| e.to_string())?; 
+    revwalk.push_glob("refs/heads/*").map_err(|e| e.to_string())?;
 
     /* repo.revwalk() instancie l'outil qui va permettre de parcourir tout les messages de commit dans notre projet 
     
@@ -121,24 +141,29 @@ fn get_git(path : String) -> Result<Vec<CommitInfo>, String> {
     
     En cas de succès uniquement, en cas d'erreur il ne recevra pas de valeur car on a le ? */
 
-
     // revwalk.push_head().map_err(|e| e.to_string())?; on indique à l'itérateur revwalk de commencer son parcour à partir de HEAD
-
 
     let mut commits = Vec::new(); // on créer une list  vide mutable car on va ajouter des items dedans
 
     for id in revwalk {
-
         let oid = id.map_err(|e| e.to_string())?; // oid (object identifier), on attribue le hash en cas de non erreur 
-        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?; 
+        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
         // commilt on attribue à commit la structure rust (objet) du commit qu'on cherche sur base du hash, cette structure rust contient le message, l'auteur, la date etc ... du commit 
 
-        let parents = commit.parent_ids().map(|p| p.to_string()).collect(); // on 
+        let commit_id_str = oid.to_string();
+        let parents = commit.parent_ids().map(|p| p.to_string()).collect();
 
-        commits.push(CommitInfo { 
-            id: oid.to_string(), 
+        /* ------------ IA-------------*/
+        let mes_branches = map_branches
+            .get(&commit_id_str)
+            .cloned()
+            .unwrap_or_default();
+        /* ------------ IA-------------*/
+
+        commits.push(CommitInfo {
+            id: oid.to_string(),
             message: commit.summary().ok().flatten().unwrap_or("").to_string(),
-            
+
             /*commit notre structure rust 
 
             .summary() est une méthode de la librairie git2 qui sert à extraire 
@@ -157,7 +182,7 @@ fn get_git(path : String) -> Result<Vec<CommitInfo>, String> {
             */
             author: commit.author().name().unwrap_or("Inconnu").to_string(),
             parents,
-            branches: vec![],
+            branches: mes_branches,
         });
 
         // on vient push dans la liste vide commits 

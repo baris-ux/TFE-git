@@ -109,7 +109,7 @@
           <p class="subtitle">{selectedTutorial.description}</p>
         </header>
 
-        <div class="tutorial-workspace">
+        <div class="instruction-card">
           {#if currentStepIndex < totalAmountOfSteps}
             <p class="subtitle">
               {selectedTutorial.instruction[currentStepIndex]}
@@ -118,7 +118,6 @@
             <p>
               fécilication vous avez finit le tutoriiel {selectedTutorial.title}
             </p>
-            <button class="">voir un autre module</button>
           {/if}
         </div>
 
@@ -149,6 +148,19 @@
     {:else if selectedExercice !== null}
       <div class="exercice-container">
         <h1>{selectedExercice.title}</h1>
+
+        <div class="instruction-card">
+          {#if currentStepIndex < totalAmountOfSteps}
+            <p class="subtitle">
+              {selectedExercice.instruction}
+            </p>
+          {:else}
+            <p>
+              fécilication vous avez finit le tutoriiel {selectedExercice.title}
+            </p>
+          {/if}
+        </div>
+
         <Terminal />
 
         <div class="button-below-exercice">
@@ -288,7 +300,9 @@
     font-size: 0.85rem;
   }
 
-  .tutorial-workspace {
+  /* ------- le css pour le div contenant les instruction ----- */
+
+  .instruction-card {
     background: #313244;
     border: 1px solid #45475a;
     border-radius: 12px;
