@@ -94,3 +94,7 @@ jobs:
           releaseDraft: false # ici on le met false, en true la release ne sera pas publique c'est à dire que seul moi et les collaborateurs du répo pourront voir la release
           prerelease: false
           args: ${{ matrix.args }}
+          updateRelease:
+            true # cela permet à ce que si une vm finit de créer un dossier de release en premier,
+            # les autre vm puisse créer un dossier de release avec le même nom de version
+            # sans ca impossible car la 2e 3e 4e ... VM va dire que le dossier existe déja !
