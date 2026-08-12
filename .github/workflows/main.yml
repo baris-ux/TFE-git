@@ -1,23 +1,96 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
-jobs:
-  Explore-GitHub-Actions:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v6
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+#name: GitHub Actions Demo
+# configuration du trigger, lorsqu'on fait un push d'un tag
+# on peut voir le tag comme un marque page qu'on met sur un commit pour indquer qu'il s'agit de la dernière version qu'on à distribué au public
+# le v* pour n'importe quoi qui commence par v
+#on:
+#  push:
+#    tags:
+#      - "v*"
+#
+#jobs: # ce que le robot github action doit réaliser ...
+#  publish-tauri: #publish-tauri est le nom de la tâches/mission que le robot doit executer
+#    permissions:
+#      contents: write # par défaut il a uniquement une permission en lecture, on donne une permission en écriture, il doit pouvoir créer les fichier .exe et .dmg
+#    strategy: # stragy indique que le robot github action doit executer en parallèle sa tâche publish-tauri
+#      fail-fast:
+#        false # failt-fast permet de faire en sorte que si un des projet executé en parallèle sur les vm de github action échoue, on vient quand même
+#        # finir d'executer les autre taches en parallèle
+#      matrix:
+#       os: []
 
-# il s'agit du fichier .yml fournit dans la documentation officielle de githuh actions (oui je sais que les émoji peuvent nous faire penser le contraire)
+name: "publish"
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+    #branches:
+    #  - release
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04"
+            args: ""
+          - platform: "ubuntu-22.04-arm" # Only available in public repos.
+            args: ""
+          - platform: "windows-latest"
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: "pnpm" # Set this to npm, yarn or pnpm. ==> pnpm
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          # This matches tauri's default project layout. Change this if you have a different layout.
+          workspaces: "./src-tauri -> target"
+
+      - name: install frontend dependencies
+        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
+        run: pnpm install # change this to npm, yarn or pnpm depending on which one you use. ==> ok
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "App ${{ github.ref_name }}"
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: false # ici on le met false, en true la release ne sera pas publique c'est à dire que seul moi et les collaborateurs du répo pourront voir la release
+          prerelease: false
+          args: ${{ matrix.args }}
