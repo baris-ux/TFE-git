@@ -29,15 +29,13 @@
 
     const reversedCommits = [...commitsList].reverse(); // reverse inverse l'ordre des éléments une liste, on le reverse pour déssiner du bas (commit les plus ancien) vers le haut (commit les plus récents)
     const totalCommits = reversedCommits.length;
-    let currentBranchName = "main";
 
     reversedCommits.forEach((c, index) => {
       //const branchName = Array.isArray(c.branches) ? c.branches[0] : c.branches;
-      if (Array.isArray(c.branches) && c.branches.length > 0) {
-        currentBranchName = c.branches[0];
-      } else if (typeof c.branches === "string" && c.branches !== "") {
-        currentBranchName = c.branches;
-      }
+      const currentBranchName =
+        Array.isArray(c.branches) && c.branches.length > 0
+          ? c.branches[0]
+          : "main";
 
       if (!branches[currentBranchName]) {
         branches[currentBranchName] =

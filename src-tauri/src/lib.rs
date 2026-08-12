@@ -112,27 +112,45 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     le ? à la fin permet à ce que la variable repo se voit attribué la valeur du dépot uniquement si 
     Repository::open(&path) a comme résultat git2::Ok, en cas de git2::Error pas de valeur attribué*/
 
-    let mut map_branches: HashMap<String, Vec<String>> = HashMap::new();
+    let mut branch_tips: Vec<(String, git2::Oid)> = Vec::new();
 
-    // <String, Vec<String>> ==> string c'est le type que doit avoir la clé, par exemple "b70odZé034mpn"
-    // vec<string> à droite, doit être un array de string, chaque item dans cet liste correspond à une branche par exemple ["main", "feature/ui"]
+    // Vec est notre array, chaque element sera un tuple avec deux valeur un string (nom de la bracche) et git2:Oid (le hash du commit parent)
 
     /* -------------------------- IA ----------------------------- */
     if let Ok(branches) = repo.branches(Some(git2::BranchType::Local)) {
         for b in branches.flatten() {
             let (branch, _) = b;
             if let (Ok(Some(nom)), Some(target)) = (branch.name(), branch.get().target()) {
-                map_branches
-                    .entry(target.to_string())
-                    .or_default()
-                    .push(nom.to_string());
+                branch_tips.push((nom.to_string(), target));
             }
         }
     }
+
+    branch_tips.sort_by_key(|(nom, _)| if nom == "main" { 0 } else { 1 }); // on trie le array en fonction, on vient détruire la tuple pour en extraire la valeur nom 
+    // if nom est main il retourne 0 si autre autre que main alors retourne 1
+
+    let mut owner: HashMap<String, String> = HashMap::new(); // pour rappelle un hashmap est un structure qui contient des information sous la forme clé : valeur
+
+    for (branch_name, tip_oid) in &branch_tips {
+        let mut branch_revwalk = repo.revwalk().map_err(|e| e.to_string())?;
+        branch_revwalk.push(*tip_oid).map_err(|e| e.to_string())?;
+
+        for id in branch_revwalk {
+            let oid = id.map_err(|e| e.to_string())?;
+            let commit_id_str = oid.to_string();
+            if owner.contains_key(&commit_id_str) {
+                break;
+            }
+
+            owner.insert(commit_id_str, branch_name.clone());
+        }
+    }
+
     /* -------------------------- IA ----------------------------- */
 
     let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
     revwalk.push_glob("refs/heads/*").map_err(|e| e.to_string())?;
+    revwalk.set_sorting(git2::Sort::TOPOLOGICAL | git2::Sort::TIME).map_err(|e| e.to_string())?; // IA
 
     /* repo.revwalk() instancie l'outil qui va permettre de parcourir tout les messages de commit dans notre projet 
     
@@ -154,9 +172,9 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
         let parents = commit.parent_ids().map(|p| p.to_string()).collect();
 
         /* ------------ IA-------------*/
-        let mes_branches = map_branches
+        let mes_branches: Vec<String> = owner
             .get(&commit_id_str)
-            .cloned()
+            .map(|b| vec![b.clone()])
             .unwrap_or_default();
         /* ------------ IA-------------*/
 
