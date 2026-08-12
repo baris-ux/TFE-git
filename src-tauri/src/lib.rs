@@ -129,16 +129,19 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     branch_tips.sort_by_key(|(nom, _)| if nom == "main" { 0 } else { 1 }); // on trie le array en fonction, on vient détruire la tuple pour en extraire la valeur nom 
     // if nom est main il retourne 0 si autre autre que main alors retourne 1
 
-    let mut owner: HashMap<String, String> = HashMap::new(); // pour rappelle un hashmap est un structure qui contient des information sous la forme clé : valeur
+    let mut owner: HashMap<String, String> = HashMap::new(); 
+    // pour rappelle un hashmap est un structure qui contient des information sous la forme clé : valeur
+    // contrairement à structure on vient uniquement définir le type des clé (ici string) et leur type de valeur (string auss)
 
     for (branch_name, tip_oid) in &branch_tips {
         let mut branch_revwalk = repo.revwalk().map_err(|e| e.to_string())?;
         branch_revwalk.push(*tip_oid).map_err(|e| e.to_string())?;
+        branch_revwalk.simplify_first_parent().map_err(|e| e.to_string())?; // ne suit que le 1er parent, pour ne pas "fuiter" dans l'historique fusionné d'un merge
 
         for id in branch_revwalk {
             let oid = id.map_err(|e| e.to_string())?;
             let commit_id_str = oid.to_string();
-            if owner.contains_key(&commit_id_str) {
+            if owner.contains_key(&commit_id_str) { 
                 break;
             }
 
@@ -163,7 +166,7 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
 
     let mut commits = Vec::new(); // on créer une list  vide mutable car on va ajouter des items dedans
 
-    for id in revwalk {
+    for id in revwalk { // on remonte vers le commit le plus anciens
         let oid = id.map_err(|e| e.to_string())?; // oid (object identifier), on attribue le hash en cas de non erreur 
         let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
         // commilt on attribue à commit la structure rust (objet) du commit qu'on cherche sur base du hash, cette structure rust contient le message, l'auteur, la date etc ... du commit 

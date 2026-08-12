@@ -30,6 +30,7 @@
     const reversedCommits = [...commitsList].reverse(); // reverse inverse l'ordre des éléments une liste, on le reverse pour déssiner du bas (commit les plus ancien) vers le haut (commit les plus récents)
     const totalCommits = reversedCommits.length;
 
+    const commitsById = new Map(commitsList.map((c) => [c.id, c]));
     reversedCommits.forEach((c, index) => {
       //const branchName = Array.isArray(c.branches) ? c.branches[0] : c.branches;
       const currentBranchName =
@@ -44,12 +45,30 @@
 
       const isHead = index === totalCommits - 1;
 
-      branches[currentBranchName].commit({
+      const commitOptions = {
         subject: c.message,
         hash: c.id,
         author: c.author,
         tag: isHead ? "HEAD" : undefined,
-      });
+      };
+
+      const isMerge = Array.isArray(c.parents) && c.parents.length > 1;
+      const secondParent = isMerge ? commitsById.get(c.parents[1]) : undefined;
+      const sourceBranchName = secondParent?.branches?.[0];
+
+      if (
+        isMerge &&
+        sourceBranchName &&
+        branches[sourceBranchName] &&
+        sourceBranchName !== currentBranchName
+      ) {
+        branches[currentBranchName].merge(
+          branches[sourceBranchName],
+          commitOptions,
+        );
+      } else {
+        branches[currentBranchName].commit(commitOptions);
+      }
     });
   }
 
