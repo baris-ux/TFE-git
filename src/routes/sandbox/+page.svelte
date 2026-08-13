@@ -174,10 +174,6 @@
 </main>
 
 <style>
-  :global(body) {
-    margin: 0;
-  }
-
   .sandbox-container {
     padding: 40px 20px;
     background: #1e1e2e;

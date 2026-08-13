@@ -96,11 +96,6 @@
 </main>
 
 <style>
-  :global(body) {
-    margin: 0;
-    padding: 0;
-  }
-
   .container {
     background-color: black;
     display: flex;

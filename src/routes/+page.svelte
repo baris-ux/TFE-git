@@ -45,16 +45,6 @@
 </main>
 
 <style>
-  :global(body) {
-    margin: 0;
-    font-family:
-      system-ui,
-      -apple-system,
-      sans-serif;
-    background-color: #0d1117;
-    color: #c9d1d9;
-  }
-
   main {
     display: flex;
     flex-direction: column;
