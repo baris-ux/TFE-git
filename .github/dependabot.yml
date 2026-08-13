@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # on demande à dependatbot de vérifier chaque jours si nouvelles version de mes dépendance existent et d'ouvrir une pull request si c'est le cas
+  - package-ecosystem: "npm" # la valeur YAML est npm pour pnpm selon la documentation officielle
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "cargo"
+    directory: "/src-tauri"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
