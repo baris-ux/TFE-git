@@ -1,11 +1,27 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte"; // pour executer une seule fois au démarrage de l'app
+
   import { invoke } from "@tauri-apps/api/core";
   import { openUrl } from "@tauri-apps/plugin-opener";
 
   let isGitInstalled = $state<boolean | null>(null);
+  let isChecking = $state(true);
+
+  onMount(() => {
+    const gitAlreadyInstalled = localStorage.getItem("git-is-installed"); // interroge le stockage local pour chercher l'étiquette git-is-installed
+    if (gitAlreadyInstalled === "true") {
+      // si elle existe
+      goto("/app"); // on se rend tout de suite dans app/+page.svelte
+    }
+  });
 
   async function verification_if_git_installed() {
-    isGitInstalled = await invoke<boolean>("verify_if_git_installed");
+    isGitInstalled = await invoke<boolean>("verify_if_git_installed"); // on appelle la fonction tauri qui va renvoyer retourner une réponse sous forme de booleen
+    if (isGitInstalled === true) {
+      // si la réponse renvoyé est vrai
+      localStorage.setItem("git-is-installed", "true"); // on créer le couple clé : valeur ==> git-is-installed : "true"
+    }
   }
 
   async function openGitWebsites(event: MouseEvent) {
