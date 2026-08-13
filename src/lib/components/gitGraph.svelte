@@ -2,6 +2,7 @@
   import { createGitgraph } from "@gitgraph/js";
   import { myGitTheme } from "$lib/config/gitTheme";
   import type { CommitInfo } from "$lib/config/GitActionsMenu";
+  import CloseButton from "./CloseButton.svelte";
 
   let {
     activeView,
@@ -10,7 +11,12 @@
     activeView: "split" | "actions" | "tree";
     commits: CommitInfo[];
   } = $props();
+
   let gitgraphElement = $state<HTMLDivElement>();
+  let isBarActive = $state(false);
+
+  let selectedCommit = $state<CommitInfo | null>(null);
+  //let selectedCommit = $state<string | null>(null);
 
   function renderGitGraph(commitsList: CommitInfo[]) {
     // on commitInfo pour éviter un conflit avec commits
@@ -50,6 +56,7 @@
         hash: c.id,
         author: c.author,
         tag: isHead ? "HEAD" : undefined,
+        onClick: () => openBoxOnCommitClick(c), // on appelle la fonction au clique sur un commit
       };
 
       const isMerge = Array.isArray(c.parents) && c.parents.length > 1;
@@ -72,8 +79,13 @@
     });
   }
 
+  function openBoxOnCommitClick(commit: CommitInfo) {
+    console.log("Commit cliqué :", commit); // commit est un objet
+    isBarActive = true;
+    selectedCommit = commit;
+  }
+
   $effect(() => {
-    //console.log("Commits reçus par GitGraph :", commits);
     console.log("Commits reçus :", $state.snapshot(commits));
     renderGitGraph(commits);
   });
@@ -83,8 +95,20 @@
   class="tree-wrapper"
   class:hidden={activeView === "actions"}
   class:full-width={activeView === "tree"}
-  bind:this={gitgraphElement}
-></div>
+>
+  <div bind:this={gitgraphElement}></div>
+
+  {#if isBarActive === true}
+    <div class="bar">
+      <CloseButton onclick={() => (isBarActive = false)} />
+      <h1>info commit</h1>
+      <p>id: {selectedCommit?.id}</p>
+      <p>message: {selectedCommit?.message}</p>
+      <p>parent : {selectedCommit?.parents}</p>
+      <p>auteur : {selectedCommit?.author}</p>
+    </div>
+  {/if}
+</div>
 
 <style>
   .tree-wrapper {
@@ -97,8 +121,12 @@
     font-weight: bold;
     border-radius: 6px;
     box-sizing: border-box;
-    display: grid;
-    place-items: center;
+
+    display: flex;
+    flex-direction: row;
+
+    align-items: flex-start;
+    justify-content: center;
     overflow: auto;
     opacity: 1;
 
@@ -106,6 +134,12 @@
       flex 0.4s cubic-bezier(0.4, 0, 0.2, 1),
       opacity 0.25s ease-in-out,
       padding 0.4s ease;
+  }
+  .bar {
+    background-color: rgb(65, 65, 65);
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
   }
 
   .tree-wrapper :global(svg) {
@@ -128,6 +162,4 @@
     pointer-events: none;
     border: none;
   }
-
-  /* ajout commentaire pour test la mise à jours de gitgraph test*/
 </style>

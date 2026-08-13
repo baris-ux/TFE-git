@@ -27,3 +27,6 @@ tauri-plugin-dialog = "2"
 git2 = "0.21.0"
 dirs = "6.0.0"
 
+[dev-dependencies]
+tempfile = "3"
+

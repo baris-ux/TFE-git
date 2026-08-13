@@ -4,6 +4,7 @@
   import { onMount, tick } from "svelte";
   import { FitAddon } from "@xterm/addon-fit";
   import "@xterm/xterm/css/xterm.css";
+  import CloseButton from "./CloseButton.svelte";
 
   let tabs = $state<TerminalLab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
   let activeTab = $state<string | null>(null); // cette variable contiendra l'ID de l'instance du terminal !!!
@@ -205,9 +206,7 @@
             (e.key === "Enter" || e.key === " ") && selectTab(tab.id)}
         >
           <span>{tab.name}</span>
-          <button class="close-btn" onclick={() => deleteTab(tab.id)}>
-            &times;
-          </button>
+          <CloseButton onclick={() => deleteTab(tab.id)} />
         </div>
       {/each}
     </div>
@@ -286,18 +285,4 @@
     border-top: 2px solid #007acc;
   }
 
-  .close-btn {
-    border: none;
-    cursor: pointer;
-    color: #888888;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 14px;
-    transition: all 0.15s ease;
-  }
-
-  .close-btn:hover {
-    background-color: #c72e2e;
-    color: #ffffff;
-  }
 </style>

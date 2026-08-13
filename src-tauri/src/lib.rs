@@ -212,6 +212,123 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     Ok(commits)
 }
 
+// ---------------------------------------------------------- Tests unitaires ----------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    // Scénario : dépot avec un seul commit racine sur une seule branche
+    // Vérifie que get_git extrait correctement id/message/author et que parents est vide
+    #[test]
+    fn test_get_git_single_commit() {
+        let temp_dir = tempfile::tempdir().unwrap(); // tempdir renvoie un Result il faut le déballer pour récupérer la valeur
+        let repo = git2::Repository::init(temp_dir.path()).unwrap(); // on initalise le dépot git 
+        let signature = git2::Signature::now("Alice", "alice@test.com").unwrap(); 
+
+        
+        let mut index = repo.index().unwrap(); 
+        let tree_oid = index.write_tree().unwrap();
+        let tree = repo.find_tree(tree_oid).unwrap();
+
+        /* -----------------------------------  IA ----------------------- ----------------------- */
+
+        let commit_oid = repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            "Initial commit",
+            &tree,
+            &[],
+        ).unwrap();
+
+        let result = get_git(temp_dir.path().to_string_lossy().into_owned());
+
+        assert!(result.is_ok());
+        let commits = result.unwrap();
+        assert_eq!(commits.len(), 1);
+        assert_eq!(commits[0].id, commit_oid.to_string());
+        assert_eq!(commits[0].message, "Initial commit");
+        assert_eq!(commits[0].author, "Alice");
+        assert!(commits[0].parents.is_empty());
+        /* -----------------------------------  IA ----------------------- ----------------------- */
+    }
+
+    // Scénario : le path en paramètre n'est pas cel d'un dépot git valide, le .git/ n'y est pas
+    // Vérfie que get_git renvoie bien une erreur 
+    #[test]
+    fn get_git_invalid_path(){
+        let temp_dir = tempfile::tempdir().unwrap(); // on vient de nouveau créer un dossier temporaire
+        let result = get_git(temp_dir.path().to_string_lossy().into_owned()); // temp_dir.path renvoi un &Path alors que get_git attend un String
+        // .to_string_lossy() renvoie un Cow<str> 
+        // .into_owned() convertit en string peut importe si c'est Cow::Borrowed ou Cow::Owned
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_git_diverging_branches(){ 
+        let temp_dir = tempfile::tempdir().unwrap();
+        let repo = git2::Repository::init(temp_dir.path()).unwrap();
+        let signature = git2::Signature::now("Alice", "alice@test.com").unwrap(); 
+
+        let mut index = repo.index().unwrap(); // index est un dictionnaire sous la forme clé valeur, chaque entrée correspond à
+        // au path du fichié (clé) et le hash du fichier (valeur)
+        let tree_oid = index.write_tree().unwrap(); // .write_tree prend une copie du dictionnaire index et le transforme en tree
+        // contrairmeent au dictionnaire index le contenu de ce dictionaire est immuable
+        let tree = repo.find_tree(tree_oid).unwrap();
+
+         /* -----------------------------------  IA ----------------------- ----------------------- */
+
+        let base_commit_oid = repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            "Base commit",
+            &tree,
+            &[],
+        ).unwrap();
+
+
+        let base_commit = repo.find_commit(base_commit_oid).unwrap();
+        repo.branch("feature", &base_commit, false).unwrap();
+
+        let commit_on_main_oid = repo.commit(
+            Some("HEAD"),
+            &signature,
+            &signature,
+            "Commit on main",
+            &tree,
+            &[&base_commit],
+        ).unwrap();
+
+        let commit_on_feature_oid = repo.commit(
+            Some("refs/heads/feature"),
+            &signature,
+            &signature,
+            "Commit on feature",
+            &tree,
+            &[&base_commit],
+        ).unwrap();
+
+        let result = get_git(temp_dir.path().to_string_lossy().into_owned());
+        assert!(result.is_ok());
+        let commits = result.unwrap();
+
+        assert_eq!(commits.len(), 3);
+
+        let base = commits.iter().find(|c| c.id == base_commit_oid.to_string()).unwrap();
+        let on_main = commits.iter().find(|c| c.id == commit_on_main_oid.to_string()).unwrap();
+        let on_feature = commits.iter().find(|c| c.id == commit_on_feature_oid.to_string()).unwrap();
+
+        assert!(base.parents.is_empty());
+        assert_eq!(on_main.parents, vec![base_commit_oid.to_string()]);
+        assert_eq!(on_feature.parents, vec![base_commit_oid.to_string()]);
+
+         /* -----------------------------------  IA ----------------------- ----------------------- */
+    }
+}
+
 // #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
 pub fn run() {
     tauri::Builder::default()
