@@ -29,4 +29,6 @@ dirs = "6.0.0"
 
 [dev-dependencies]
 tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt"] } 
 
+# tokio le nom de la bibliothèque, macro activie les marco, rt active le runtime asynchrone necessaire pour executer les tests

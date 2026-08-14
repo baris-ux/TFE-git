@@ -327,6 +327,54 @@ mod tests {
 
          /* -----------------------------------  IA ----------------------- ----------------------- */
     }
+
+
+    // Scénario : le dossier existe mais il ne s'agit pas d'un dossier git 
+    // Vérifie que le dossier temporaire passé en paramètre ne contient pas un .git
+    #[tokio::test] // les fonction décalré avec un async necessite l'utilisation de tokio, 
+    async fn test_if_git_repository(){
+        let temp_dir = tempfile::tempdir().unwrap(); // tempfile::tempdir() créer un dossier temporaire avce un nom aléatoire
+        let result = if_git_repository(
+            temp_dir.path().to_string_lossy().into_owned() // temp_dir.path() renvoie le chemin du dossier temporaire sous forme &Path
+            // to_string_lossy() transforme &Path en Cow<str>
+            // .into_owned() transforme ce cow<str> en String
+        ).await;
+        assert!(!result); // on attend qu’un dossier normal n’est pas un dépôt Git donc on attend result == false
+    }
+
+    #[tokio::test] 
+    async fn test_if_git_repository_path_nonexistent(){
+        let temp_dir = tempfile::tempdir().unwrap(); // pareil on créer un dossier temporaire par exemple /tmp/.tmpAbC123
+        let path_noexistent = temp_dir.path().join("nimportequoi"); // /tmp/.tmpAbC123/nimportequoi le sous dossier n'importe n'est jamais créer
+
+        let result = if_git_repository(
+            path_noexistent.to_string_lossy().into_owned()
+        ).await;
+        assert!(!result)
+    }   
+
+    // Scénario : le dossier sélectionner est un dossier git 
+    #[tokio::test]
+    async fn test_if_git_repository_is_valide(){
+        let temp_dir = tempfile::tempdir().unwrap(); // on recréer un dossier temporaire son type est tempfile::TempDir et pas &Path
+        git2::Repository::init(temp_dir.path()).unwrap(); // on initie créer le dépot git
+
+        let result = if_git_repository(
+            temp_dir.path().to_string_lossy().into_owned() 
+            // .path() récupère le chemin du dossier temporaire et renvoie un &Path
+            // .to_string_lossy() convertit &Path en Cow<str> 
+            // .into_owned() convertit Cow<str>  en string
+        ).await;
+        assert!(result)
+    }
+
+    // Scénario : git est installé sur la machine
+    // on vérfie juste que test_verify_if_git_installed renvoie true 
+    #[test]
+    fn test_verify_if_git_installed(){
+        let result = verify_if_git_installed();
+        assert!(result)
+    }
 }
 
 // #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
