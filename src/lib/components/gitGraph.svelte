@@ -14,6 +14,7 @@
 
   let gitgraphElement = $state<HTMLDivElement>();
   let isBarActive = $state(false);
+  let commitInfoDisplayed = $state(false);
 
   let selectedCommit = $state<CommitInfo | null>(null);
   //let selectedCommit = $state<string | null>(null);
@@ -79,10 +80,14 @@
     });
   }
 
+  function displayCommitInfo() {
+    commitInfoDisplayed = true;
+    isBarActive = false; // pour cacher le menu de bouton
+  }
+
   function openBoxOnCommitClick(commit: CommitInfo) {
-    console.log("Commit cliqué :", commit); // commit est un objet
-    isBarActive = true;
     selectedCommit = commit;
+    isBarActive = true;
   }
 
   $effect(() => {
@@ -101,6 +106,13 @@
   {#if isBarActive === true}
     <div class="bar">
       <CloseButton onclick={() => (isBarActive = false)} />
+      <h1>menu d'intéraction</h1>
+      <button onclick={() => displayCommitInfo()}>voir détaille commit</button>
+      <button>commparer avec ...</button>
+    </div>
+  {:else if commitInfoDisplayed === true}
+    <div class="commit-info">
+      <CloseButton onclick={() => (commitInfoDisplayed = false)} />
       <h1>info commit</h1>
       <p>id: {selectedCommit?.id}</p>
       <p>message: {selectedCommit?.message}</p>
@@ -135,11 +147,34 @@
       opacity 0.25s ease-in-out,
       padding 0.4s ease;
   }
+
   .bar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .bar,
+  .commit-info {
     background-color: rgb(65, 65, 65);
     border: none;
     border-radius: 10px;
     padding: 10px;
+  }
+
+  .bar button {
+    background-color: #2c539e;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s;
+  }
+
+  .bar button:hover {
+    background-color: #3b69c4;
   }
 
   .tree-wrapper :global(svg) {
