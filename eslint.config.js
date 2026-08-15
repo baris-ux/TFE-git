@@ -15,7 +15,7 @@ export default defineConfig([
   {
     files: ["**/*.svelte"],
     languageOptions: {
-      languageOptions: {
+      globals: {
         ...globals.browser, // le ... veut dire
         ...globals.node,
       },
