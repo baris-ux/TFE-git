@@ -91,10 +91,10 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "App ${{ github.ref_name }}"
           releaseBody: "See the assets to download this version and install."
-          releaseDraft: false # ici on le met false, en true la release ne sera pas publique c'est à dire que seul moi et les collaborateurs du répo pourront voir la release
+          releaseDraft: true # ici on le met false, en true la release ne sera pas publique c'est à dire que seul moi et les collaborateurs du répo pourront voir la release
           prerelease: true
           args: ${{ matrix.args }}
           updateRelease:
-            true # cela permet à ce que si une vm finit de créer un dossier de release en premier,
+            false # cela permet à ce que si une vm finit de créer un dossier de release en premier,
             # les autre vm puisse créer un dossier de release avec le même nom de version
             # sans ca impossible car la 2e 3e 4e ... VM va dire que le dossier existe déja !
