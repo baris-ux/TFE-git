@@ -397,7 +397,37 @@ mod tests {
         assert!(result)
     }
 
-    //
+    // Scénario : si un des commit passé en paramètre (le hash) est invalide
+    // on vérifie si un des hash est invalide
+    #[test]
+    fn test_compare_commit_returns_error_when_old_commit_is_invalid() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let repo = git2::Repository::init(temp_dir.path()).unwrap();
+        let signature = git2::Signature::now("Alice", "alice@test.com").unwrap();
+
+        let mut index = repo.index().unwrap();
+        let tree_oid = index.write_tree().unwrap();
+        let tree = repo.find_tree(tree_oid).unwrap();
+
+        let valid_commit = repo
+            .commit(
+                Some("HEAD"),
+                &signature,
+                &signature,
+                "Commit valide",
+                &tree,
+                &[],
+            )
+            .unwrap();
+
+        let result = compare_commit(
+            temp_dir.path().to_string_lossy().as_ref(),
+            "0000000000000000000000000000000000000000",
+            &valid_commit.to_string(),
+        );
+
+        assert!(result.is_err());
+    }
 }
 
 // #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
