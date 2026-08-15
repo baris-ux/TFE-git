@@ -89,7 +89,7 @@
   <div class="content-layout">
     <GitActionMenu {activeView} {activeMenu} {toggleMenu} {generateCommand} />
 
-    <GitGraph {activeView} {commits} />
+    <GitGraph {activeView} {commits} path={projectPath} />
   </div>
 
   <Terminal loadGitHistory={() => projectPath && loadGitHistory(projectPath)} />

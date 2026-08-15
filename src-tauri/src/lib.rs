@@ -208,9 +208,30 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
 
         // on vient push dans la liste vide commits 
     }
-
     Ok(commits)
 }
+
+
+#[tauri::command]
+fn compare_commit(path: &str, old_commit: &str, new_commit: &str) -> Result<String, String>{
+    let output = std::process::Command::new("git")
+        .current_dir(path)
+        .args(["diff", old_commit, new_commit])
+        .output() // renvoie un Result
+        .map_err(|err| format!("Impossible d'exécuter Git : {err}"))?; // .map_err transforme l'erreur si resultat est un Err
+
+        if !output.status.success(){// le statut de fin du processus git .sucess() ==> si 0 alors true, si false != 0 
+            return Err(String::from_utf8_lossy(&output.stderr).to_string()); 
+            // après executiond de git utput.stderr contient son message d’erreur.
+            // par exemple si le hash du commit est mauvais git renvoie fatal: bad object abc123
+            // mais rust recoit la réponse sous forme d'octets
+
+            // from_utf8_lossy() transforme &[u8] en Cow<'_, str>
+        } 
+
+        Ok(String::from_utf8_lossy(&output.stdout).to_string())
+}
+
 
 // ---------------------------------------------------------- Tests unitaires ----------------------------------------------------------
 
@@ -375,6 +396,8 @@ mod tests {
         let result = verify_if_git_installed();
         assert!(result)
     }
+
+    //
 }
 
 // #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
@@ -383,7 +406,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init()) // ca permet d'ouvrir un browser dans l'os (plus pratique que si on ouvre dans le webview)
         .plugin(tauri_plugin_pty::init()) // ajout du plugin pty permettant de demander à l'os de créer un pseudo terminal
         .plugin(tauri_plugin_dialog::init()) // ajout du plugin dialog permettant d'ouvrir l'explorateur de fichiers de l'os
-        .invoke_handler(tauri::generate_handler![if_git_repository, get_git, verify_tutorial_step, verify_if_git_installed, setup_exercise_repo])
+        .invoke_handler(tauri::generate_handler![compare_commit, if_git_repository, get_git, verify_tutorial_step, verify_if_git_installed, setup_exercise_repo])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

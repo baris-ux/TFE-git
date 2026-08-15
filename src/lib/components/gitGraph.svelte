@@ -3,21 +3,29 @@
   import { myGitTheme } from "$lib/config/gitTheme";
   import type { CommitInfo } from "$lib/config/GitActionsMenu";
   import CloseButton from "./CloseButton.svelte";
+  import { invoke } from "@tauri-apps/api/core";
 
   let {
     activeView,
     commits = [],
+    path,
   }: {
     activeView: "split" | "actions" | "tree";
     commits: CommitInfo[];
+    path: string | null;
   } = $props();
 
   let gitgraphElement = $state<HTMLDivElement>();
   let isBarActive = $state(false);
   let commitInfoDisplayed = $state(false);
+  let isComparaisonActive = $state(false);
+  let diffResult = $state<string | null>(null);
+  let diffError = $state<string | null>(null);
+
+  let firstHash = $state<string | null>(null);
+  let secondHash = $state<string | null>(null);
 
   let selectedCommit = $state<CommitInfo | null>(null);
-  //let selectedCommit = $state<string | null>(null);
 
   function renderGitGraph(commitsList: CommitInfo[]) {
     // on commitInfo pour éviter un conflit avec commits
@@ -80,14 +88,64 @@
     });
   }
 
+  function openBoxOnCommitClick(commit: CommitInfo) {
+    if (isComparaisonActive) {
+      // si on a appyer sur le bouton pour comparer
+      if (commit.id === firstHash) {
+        // si le hash du commit qu'on selectionne est pareil que le premier
+        diffError = "Choisis un commit différent du premier.";
+        return;
+      }
+
+      secondHash = commit.id;
+      //isComparaisonActive = false;
+      commitComparaison();
+      return;
+    }
+
+    selectedCommit = commit;
+    isBarActive = true;
+  }
+
   function displayCommitInfo() {
     commitInfoDisplayed = true;
     isBarActive = false; // pour cacher le menu de bouton
   }
 
-  function openBoxOnCommitClick(commit: CommitInfo) {
-    selectedCommit = commit;
-    isBarActive = true;
+  function startComparaison() {
+    if (!selectedCommit) return; // si selectedCommit vaut null alors on renvoie vrai
+    // si selectedCommit est un objet renvoit false
+    // on return si c'est false pour arrêter toute de suite l'execution de la fonction
+
+    firstHash = selectedCommit.id; // on récupère le hash du commit déja selectionné (lorsqu'on a cliquer pour faire apparaitre le menu)
+    secondHash = null; // on set toute les valeur à null
+    diffResult = null;
+    diffError = null;
+    isBarActive = false; // on ferme le menu d'intéraction
+    isComparaisonActive = true; // on ouvre le conteneur de comparaison
+  }
+
+  function cancelComparaison() {
+    isComparaisonActive = false;
+    firstHash = null;
+    secondHash = null;
+  }
+
+  async function commitComparaison() {
+    if (firstHash === null || secondHash === null || path === null) {
+      return;
+    }
+
+    diffError = null;
+    try {
+      diffResult = await invoke<string>("compare_commit", {
+        path,
+        oldCommit: firstHash,
+        newCommit: secondHash,
+      });
+    } catch (err) {
+      diffError = String(err);
+    }
   }
 
   $effect(() => {
@@ -108,7 +166,7 @@
       <CloseButton onclick={() => (isBarActive = false)} />
       <h1>menu d'intéraction</h1>
       <button onclick={() => displayCommitInfo()}>voir détaille commit</button>
-      <button>commparer avec ...</button>
+      <button onclick={startComparaison}>comparer avec ...</button>
     </div>
   {:else if commitInfoDisplayed === true}
     <div class="commit-info">
@@ -118,6 +176,26 @@
       <p>message: {selectedCommit?.message}</p>
       <p>parent : {selectedCommit?.parents}</p>
       <p>auteur : {selectedCommit?.author}</p>
+    </div>
+  {:else if isComparaisonActive === true}
+    <div class="commit-diff">
+      <CloseButton onclick={cancelComparaison} />
+      <p>1er commit sélectionné : {firstHash}</p>
+
+      {#if secondHash === null}
+        <p>Sélectionne le 2e commit à comparer...</p>
+      {:else if diffResult}
+        <!-- si diffResult n'est pas une chaine vide ou null -->
+        <p>2e commit sélectionné : {secondHash}</p>
+        <p>{diffResult}</p>
+        <!-- si diffResult est une chaine vide (j'ai beaucoup galéré sur celui la ...) -->
+      {:else if diffResult === ""}
+        <p>2e commit sélectionné : {secondHash}</p>
+        <p>il n'y a aucune différence</p>
+      {:else if diffError}
+        <p>2e commit sélectionné : {secondHash}</p>
+        <p>quelque chose s'est mal passé</p>
+      {/if}
     </div>
   {/if}
 </div>
@@ -155,7 +233,8 @@
   }
 
   .bar,
-  .commit-info {
+  .commit-info,
+  .commit-diff {
     background-color: rgb(65, 65, 65);
     border: none;
     border-radius: 10px;
