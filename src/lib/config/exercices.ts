@@ -16,11 +16,11 @@ export const exercices: Exercice[] = [
     difficulty: "Débutant",
     setupCommands: [
       ["git", "init", "-b", "main"],
-      ["touch", "README.md"], // <-- 1. Crée le fichier sur Linux/macOS
-      ["git", "add", "README.md"], // <-- 2. Maintenant Git le trouve !
+      ["touch", "README.md"],
+      ["git", "add", "README.md"],
       ["git", "commit", "-m", "Initial commit"],
       ["git", "checkout", "-b", "feature"],
-      ["touch", "feature.txt"], // <-- Crée un fichier pour la branche feature
+      ["touch", "feature.txt"],
       ["git", "add", "."],
       ["git", "commit", "-m", "feat: nouvelle option"],
       ["git", "checkout", "main"],

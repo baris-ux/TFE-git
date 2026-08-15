@@ -92,7 +92,10 @@
     <GitGraph {activeView} {commits} path={projectPath} />
   </div>
 
-  <Terminal loadGitHistory={() => projectPath && loadGitHistory(projectPath)} />
+  <Terminal
+    bind:this={terminalRef}
+    loadGitHistory={() => projectPath && loadGitHistory(projectPath)}
+  />
 </main>
 
 <style>
