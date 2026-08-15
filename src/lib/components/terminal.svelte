@@ -19,7 +19,7 @@
     fitAddon?: FitAddon; // fitAddon c'est une class contenu dans le package "@xterm/addon-fit", elle définit une structure d'objet et par conséquent on peut l'utiliser comme type
     // il faut que chaque instance a cette clé car chaque terminal a besoin que le nombre de ligne et colonne s'adaptent au div parent
 
-    pty?: any; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
+    pty?: unknown; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
 
     resizeObserver?: ResizeObserver; // un écouteur d'évènement,
     // il est déja intégré dans le navigateur pas besoin de l'installer on vient faire une déclaration de type
@@ -284,5 +284,4 @@
     color: #ffffff;
     border-top: 2px solid #007acc;
   }
-
 </style>
