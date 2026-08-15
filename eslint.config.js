@@ -6,9 +6,10 @@ import svelte from "eslint-plugin-svelte";
 import globals from "globals";
 
 export default defineConfig([
-  js.configs
-    .recommended /* c'est un ensemble de règle préconfiguré pour JavaScript ca permet d'éviter d'écrire 100 règle à la main
-    ca permet par exemple d'empêcher de réassigner une valeur à une variable déclarée avec const*/,
+  js.configs.recommended,
+  /* c'est un ensemble de règle préconfiguré pour JavaScript ca permet d'éviter d'écrire 100 règle à la main
+    ca permet par exemple d'empêcher de réassigner une valeur à une variable déclarée avec const*/
+  ...ts.configs.recommended,
 
   ...svelte.configs["flat/recommended"], // meme principe mais avec du svelte cette fois ci
 
