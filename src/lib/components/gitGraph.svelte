@@ -35,7 +35,8 @@
       return; // le return permet d'empêcher le reste de la fonction de s'executer si c'est vrai
     }
 
-    gitgraphElement.innerHTML = ""; // On néttoie la DOM à chaque fois quela fonction renderGitGraph est appelé pour éviter pour déssiner un nouvel arbre git
+    //gitgraphElement.innerHTML = ""; // On néttoie la DOM à chaque fois quela fonction renderGitGraph est appelé pour éviter pour déssiner un nouvel arbre git
+    gitgraphElement.textContent = "";
 
     const gitgraph = createGitgraph(gitgraphElement, { template: myGitTheme });
 
