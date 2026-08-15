@@ -1,59 +1,29 @@
-# Tauri + SvelteKit + TypeScript
+# GitLearn application de bureau cross-platform
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+Bienvenue sur le README de mon application de bureau GitLearn que j'ai faite dans le cadre de mon travail de fin d'études.
+Il s'agit d'un outil permettant de faciliter l'apprentissage de Git. À l'intérieur, vous trouverez les fonctionnalités suivantes :
 
-## Recommended IDE Setup
+## Fonctionnalités : 
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+- un terminal qui est relié au shell de votre machine dans lequel vous pourrez entrer vos commandes Git
+- une représentation visuelle de l'arbre Git où vous pourrez voir les branches, les nœuds
+- interaction avec l'arbre Git pour afficher les détails de commit et la différence avec un autre commit
+- un menu d'actions guidées qui génère la commande dans le terminal
+- une fiche d'information pour chaque commande dans le menu d'actions guidées
+- un 1er tutoriel indiquant comment utiliser Git
+- un 1er exercice permettant de pratiquer Git
 
-## 🛠️ explication du package.json
+## Technologies utilisées
 
-- **`lint": "eslint .`**
-  Il permet l'execution de la commande pnpm lint qui permet d'aller chercher tous les dans tous fichiers du projet (sauf ceux ignorés dans `eslint.config.js`) les mauvaises pratiques et maintenir la qualité du projet.
+Pour réaliser mon application de bureau, j'ai utilisé Tauri comme framework ainsi que Svelte pour le frontend UI.
 
-- **`@tauri-apps/plugin-dialog .`**
-- C'est un Package JS qui permet d'ouvrir l'explorateur de fichiers. Il permet de sélectionner un dossier et de renvoyer son chemin. Souvenez-vous, Node est un runtime qui a accès à notre disque et qui n'est pas sandboxé. Or, dans notre projet, on ne possède pas Node.js. Le runtime JavaScript utilisé dans ce projet est le composant Webview, qui lui est sandboxé. C'est pourquoi ce package contient du code JavaScript qui permet de communiquer via IPC avec Rust, qui lui a un accès au disque.
+## Installation 
 
-## explication code
+Pour installer l'application, rendez-vous dans la section [**Releases de mon dépôt**](https://github.com/baris-ux/TFE-git/releases) et téléchargez la dernière version disponible pour profiter des dernières fonctionnalités
 
-dane une instance on peut se dire que chaque clé va avoir un type du style "string", int etc ... mais il arrive qu'ils peuvent avoir des nom de fonction comme type
-les fonction constructeur d'objets créer automatiquement un type de même nom par exemple, je
+Vous trouverez le fichier exécutable correspondant à votre système d'exploitation.
 
-```typescript
-function direBonjour() {
-  return "Hello";
-}
-
-// ❌ IMPOSSIBLE : direBonjour n'est pas un type !
-let monNom: direBonjour;
-```
-
-Par contre :
-
-```typescript
-class Voiture {
-  moteur: string = "V8";
-  rouler() {}
-}
-
-// POSSIBLE : Voiture est devenue un Type qui décrit la forme de l'objet !
-let maVoiture: Voiture;
-```
-
-## explication code
-
-Un commit ne sait pas sur quel branche il se trouve !
-il contient uniquement :
-
-l'auteur
-la date
-le message
-Le Hash du commit PARENT
-
-une branche ne contient pas des commit, en réalité une branche c'est un pointeur !!!
-je pensais que le HEAD était un pointeur mais en fait il travaillent ensemble
-
-le HEAD vient pointer sur le dernier endroit d'une branche
-la branche est le pointeur qui indique le dernier commit pour cette branceh
-
-en fait le pointeur par exemple feat/ui se place sur le dernier commit de cette branche à l'ajout de chaque commit se qui fait que le commit précédent perd ce pointeur
+Vous y trouverez le fichier exécutable correspondant à votre système d'exploitation :
+- **Linux :** `.deb` ou `.AppImage`
+- **Windows :** `.exe`
+- **macOS :** `.dmg`
