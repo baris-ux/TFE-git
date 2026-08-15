@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
+
   let { projectPath, toggleView, selectProject } = $props();
   // on créeer une liason unidirectionnel (du parent vers l'enfant) et pour ca on utilise un props qui s'écrit de la manière suivant let {} = $props
   // ca permet de pointer les variable et fonctions existant dans le parent pour les utilsier directement dans ce fichier
@@ -28,7 +30,10 @@
       Ouvrir un projet Git
     </button>
 
-    <a href="/sandbox" class="sandbox-btn"> mode bac à sable ⛱️ </a>
+    <a href={resolve("/sandbox")} class="sandbox-btn"> mode bac à sable ⛱️ </a>
+    <!-- on utilise resolve, il permet d'aider à générer des type les chemins internes -->
+    <!-- même si on spéciie le chemin, elle utilise les route généré par le file-based-routing pour généré des url-->
+    <!-- à noter que resolveRoute est déprécié, c'est à dire qu'elle fonctionne mais qu'elle sera obselète à l'avenir-->
   </div>
 </header>
 

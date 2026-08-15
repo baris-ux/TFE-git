@@ -4,15 +4,15 @@
 
   import { invoke } from "@tauri-apps/api/core";
   import { openUrl } from "@tauri-apps/plugin-opener";
+  import { resolve } from "$app/paths";
 
   let isGitInstalled = $state<boolean | null>(null);
-  let isChecking = $state(true);
 
   onMount(() => {
     const gitAlreadyInstalled = localStorage.getItem("git-is-installed"); // interroge le stockage local pour chercher l'étiquette git-is-installed
     if (gitAlreadyInstalled === "true") {
       // si elle existe
-      goto("/app"); // on se rend tout de suite dans app/+page.svelte
+      goto(resolve("/app")); // on se rend tout de suite dans app/+page.svelte
     }
   });
 
@@ -42,7 +42,7 @@
     </button>
   {:else if isGitInstalled === true}
     <p class="success">git est bien présent sur votre machine !</p>
-    <a href="/app" class="start-btn">Commencez !</a>
+    <a href={resolve("/app")} class="start-btn">Commencez !</a>
   {:else if isGitInstalled === false}
     <div class="container-fail-case">
       <p class="error">git n'est pas présent sur votre machine ...</p>

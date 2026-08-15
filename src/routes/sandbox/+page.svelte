@@ -3,6 +3,7 @@
   import { exercices, type Exercice } from "$lib/config/exercices";
   import Terminal from "$lib/components/terminal.svelte";
   import { invoke } from "@tauri-apps/api/core";
+  import { resolve } from "$app/paths";
 
   let selectedTutorial = $state<Tutorial | null>(null);
   let currentStepIndex = $state<number>(0);
@@ -60,7 +61,7 @@
   <div class="content-wrapper">
     <!-- SI on a ni selectionné un tutoriel ni un exercice on vient afficher le menu de la page-->
     {#if selectedTutorial === null && selectedExercice === null}
-      <a href="/app" class="back-button">Retour</a>
+      <a href={resolve("/app")} class="back-button">Retour</a>
 
       <header>
         <h1>Mode Bac à Sable ⛱️</h1>
