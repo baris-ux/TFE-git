@@ -25,7 +25,10 @@ Pour installer l'application, rendez-vous dans la section
 
 ### Dernière version stable
 
-Pour installer l'application, rendez-vous dans la section [**Releases de mon dépôt**](https://github.com/baris-ux/TFE-git/releases) et téléchargez la dernière version disponible, si vous souhaiter profiter de la dernière version stable cliquer sur la version avec le tag latest, à noter que sur cette image bien que le tag latest soit présent il s'agit d'une exception, le développement de cette application je me suis trompé en ne le sortant pas en tant que prerelease ni avec un identifiant de preversion, les version suivant qui sortiront avec l'etiquette latest seront quant à bien étiquetté, l'équipe de développement vous prie d'accepter ses excuses
+Elle porte l'étiquette `Latest`. À noter que la version actuellement marquée
+`Latest` (la version v1.0.2) constitue une exception : par erreur de configuration, elle n'a pas été
+publiée en préversion et ne comporte pas un identifiant de préversion alors qu'elle n'était pas encore stable. Les prochaines
+versions seront correctement étiquetées.
 
 <img width="961" height="155" alt="image" src="https://github.com/user-attachments/assets/f3f720ae-0741-4a1c-9711-11f02d83c6c1" />
 
@@ -46,4 +49,39 @@ Vous y trouverez le fichier exécutable correspondant à votre système d'exploi
 - **Windows :** `.exe`
 - **macOS :** `.dmg`
 
+
+
+### Installation sur Ubuntu
+
+Téléchargez le fichier `.deb`, puis depuis le dossier où il se trouve :
+
+```bash
+cd ~/Téléchargements
+sudo apt install ./git-learn_1.1.0-3_amd64.deb
+```
+
+Le `./` est indispensable : sans lui, `apt` cherche le paquet dans ses dépôts au
+lieu de lire le fichier local. N'extrayez pas le `.deb` avec un gestionnaire
+d'archives, il doit être installé tel quel.
+
+Lancez ensuite l'application depuis le menu des applications, ou en terminal :
+
+```bash
+git-learn
+```
+
+Pour la désinstaller :
+
+```bash
+sudo apt remove git-learn
+```
+
+### Alternative sans installation (Linux)
+
+Le format `.AppImage` ne nécessite aucune installation ni droits administrateur :
+
+```bash
+chmod +x git-learn_1.1.0-3_amd64.AppImage
+./git-learn_1.1.0-3_amd64.AppImage
+```
 
