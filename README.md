@@ -133,3 +133,30 @@ raccourci sur le bureau et lancer git-learn immédiatement :
 <img width="581" height="477" alt="Capture d&#39;écran 2026-08-18 190347" src="https://github.com/user-attachments/assets/15de6f4e-42df-4fca-952b-eb500983b9ad" />
 
 </details>
+
+### Installation sur macOS
+
+> Cette procédure n'a pas pu être testée : le développement s'est déroulé sous
+> Linux et Windows, sans accès à une machine macOS. Les binaires sont générés
+> automatiquement par l'intégration continue, mais leur installation n'a pas été
+> validée manuellement.
+
+Deux fichiers `.dmg` sont proposés selon votre processeur :
+
+- **Apple Silicon** (M1, M2, M3…) : le fichier `aarch64`
+- **Intel** : le fichier `x64`
+
+Ouvrez le `.dmg`, puis glissez l'application dans le dossier **Applications**.
+
+#### Avertissement Gatekeeper
+
+L'application n'étant ni signée ni notarisée par Apple, macOS refusera de
+l'ouvrir au premier lancement. Faites un **clic droit** sur l'application, puis
+choisissez **Ouvrir** dans le menu contextuel, et confirmez.
+
+Si macOS indique que l'application est « endommagée », la mise en quarantaine
+peut être retirée en terminal :
+
+```bash
+xattr -d com.apple.quarantine /Applications/git-learn.app
+```
