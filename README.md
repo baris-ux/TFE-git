@@ -165,3 +165,19 @@ xattr -d com.apple.quarantine /Applications/git-learn.app
 > Cette commande retire la vérification de sécurité de macOS **pour cette
 > application uniquement**. Les autres logiciels restent protégés par Gatekeeper.
 > Ne l'utilisez que pour des logiciels dont vous connaissez la provenance.
+
+## Obtenir de l'aide
+
+En cas de problème d'installation ou de bug rencontré dans l'application, vous
+pouvez [ouvrir une issue](https://github.com/baris-ux/TFE-git/issues) en précisant :
+
+- votre système d'exploitation et sa version
+- la version de l'application installée
+- le message d'erreur affiché, si applicable
+
+## Auteur et maintenance
+
+Projet développé par **Baris Ozcelik** dans le cadre d'un travail de fin d'études.
+
+Le développement est actif jusqu'à la remise du travail. Aucune garantie de
+maintenance n'est assurée au-delà de cette échéance.
