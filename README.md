@@ -160,3 +160,8 @@ peut être retirée en terminal :
 ```bash
 xattr -d com.apple.quarantine /Applications/git-learn.app
 ```
+
+> [!WARNING]
+> Cette commande retire la vérification de sécurité de macOS **pour cette
+> application uniquement**. Les autres logiciels restent protégés par Gatekeeper.
+> Ne l'utilisez que pour des logiciels dont vous connaissez la provenance.
