@@ -85,3 +85,51 @@ chmod +x git-learn_1.1.0-3_amd64.AppImage
 ./git-learn_1.1.0-3_amd64.AppImage
 ```
 
+### Installation sur Windows
+
+Téléchargez le fichier `.exe`, puis double-cliquez dessus depuis votre dossier
+de téléchargement.
+
+#### Avertissement SmartScreen
+
+Windows SmartScreen bloquera très probablement l'exécution du fichier. Cela ne
+signifie pas que l'application contient un logiciel malveillant : le blocage est
+dû à l'absence de signature numérique. Signer une application nécessite un
+certificat payant délivré par une autorité de certification, ce qui n'a pas été
+mis en place dans le cadre de ce projet.
+
+Pour continuer, cliquez sur **Informations complémentaires** :
+
+<img width="652" alt="Avertissement SmartScreen" src="https://github.com/user-attachments/assets/ca0f7a62-13f3-4b31-a494-fbdcaf759769" />
+
+Puis sur **Exécuter quand même** :
+
+<img width="661" alt="Bouton Exécuter quand même" src="https://github.com/user-attachments/assets/38864dd6-5887-4734-b68c-802a51e6e31d" />
+
+#### Assistant d'installation
+
+L'assistant classique s'ouvre : choisissez le dossier d'installation, puis
+laissez-vous guider jusqu'à l'écran final.
+
+<details>
+  
+<summary>Voir les captures d'écran de l'assistant</summary>
+
+L'assistant s'ouvre. Cliquez sur **Next** :
+
+<img width="581" alt="Écran d'accueil de l'assistant" src="https://github.com/user-attachments/assets/562158af-179f-42e0-9c60-6b704e10e3e8" />
+
+Choisissez le dossier d'installation, puis cliquez de nouveau sur **Next** :
+
+<img width="581" alt="Choix du dossier d'installation" src="https://github.com/user-attachments/assets/16abad57-39fb-4b88-8b88-5d112db4d8a8" />
+
+L'installation se lance. Une fois terminée, cliquez sur **Next** :
+
+<img width="581" alt="Installation terminée" src="https://github.com/user-attachments/assets/2f7c023a-c514-46bd-9dce-774ee73da132" />
+
+Cliquez enfin sur **Finish**. Vous pouvez laisser les cases cochées pour créer un
+raccourci sur le bureau et lancer git-learn immédiatement :
+
+<img width="581" height="477" alt="Capture d&#39;écran 2026-08-18 190347" src="https://github.com/user-attachments/assets/15de6f4e-42df-4fca-952b-eb500983b9ad" />
+
+</details>
