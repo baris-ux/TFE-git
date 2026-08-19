@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 
-// eslint-disable-next-line no-undef
+// eslint-disable-next-line no-undef, @typescript-eslint/no-explicit-any
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 

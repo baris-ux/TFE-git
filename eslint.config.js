@@ -17,8 +17,10 @@ export default defineConfig([
     files: ["**/*.svelte"],
     languageOptions: {
       globals: {
-        ...globals.browser, // le ... veut dire
+        ...globals.browser, // on indique avec cette ligne que des mots tels que windows, document ou console sont normal et qu'il ne doitvent pas être
+        // marqué comme erreur
         ...globals.node,
+        // on indique que le mot process ne doit pas être marqué comme une erreur
       },
       parserOptions: {
         parser: ts.parser,
