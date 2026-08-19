@@ -9,7 +9,6 @@
 
 <header class="header-bar">
   <div>
-    <h1>Actions guidées</h1>
     <p>
       Projet actuel : <span class="project-path"
         >{projectPath ?? "aucun projet sélectionné"}</span
@@ -38,7 +37,6 @@
 </header>
 
 <style>
-  h1,
   p {
     color: white;
     font-weight: bold;
@@ -56,7 +54,7 @@
     border: 1px solid #333333;
   }
 
-  .header-bar h1 {
+  .header-bar {
     margin: 0 0 5px 0;
   }
 
