@@ -235,7 +235,6 @@
   .terminal-wrapper {
     width: 100%;
     height: 25%;
-    display: flex;
     flex-direction: column;
   }
 
