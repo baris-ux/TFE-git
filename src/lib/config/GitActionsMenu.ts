@@ -13,6 +13,7 @@ export interface CommitInfo {
   author: string;
   parents: string[];
   branches: string[];
+  is_head: boolean;
 }
 
 export interface SubMenu {

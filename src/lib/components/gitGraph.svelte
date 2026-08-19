@@ -91,9 +91,6 @@
       return; // le return permet d'empêcher le reste de la fonction de s'executer si c'est vrai
     }
 
-    //gitgraphElement.innerHTML = ""; // On néttoie la DOM à chaque fois quela fonction renderGitGraph est appelé pour éviter pour déssiner un nouvel arbre git
-    //gitgraphElement.textContent = "";
-
     const gitgraph = createGitgraph(gitgraphElement, { template: myGitTheme });
     type BranchType = ReturnType<typeof gitgraph.branch>;
     const branches: Record<string, BranchType> = {};
@@ -108,8 +105,9 @@
     const reversedCommits = [...commitsList].reverse();
     // on vient modifier l'ordre des commits SANS modifier le tableau d'origine grâce à [...comitsList]
     // on vient changer l'ordre des commit de cette copie grâce à .reverse();
-    // on reverse car on doit déssiner les commits du plus récent vers le plus ancien
-    // cela est du au fait qu'un commit connait le hash de son parent mais l'inverse n'est pas vrai
+    // ==> reversedCommid à l'indice 0 correspond au commit le plus ancien
+    // on a besoin de reversedCommit pour déssiner les commit du plus ancien au plus récent
+    // gitgraph/js ne sait pas déssiner un commit parent à partir de l'enfant
 
     const totalCommits = reversedCommits.length;
     const commitsById = new Map(commitsList.map((c) => [c.id, c]));
@@ -125,7 +123,8 @@
           branches["main"].branch(currentBranchName);
       }
 
-      const isHead = index === totalCommits - 1;
+      //const isHead = index === totalCommits - 1;
+      const isHead = c.is_head;
 
       const commitOptions = {
         subject: c.message,

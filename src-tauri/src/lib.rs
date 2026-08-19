@@ -1,3 +1,8 @@
+// vous trouverez ici mon code rust, c'est un langage que j'ai eu beaucoup de mal à comprendre
+// pour faciliter votre compréhension j'ai mis des commentaire un peu partout en esperent que cela aidera à la compréhension
+// si vous devez retenir une seule chose en rust  la philosophie est que 
+// vous devez TOUT mais alors absolument TOUT convetir dans le format attendu pour que le type correspond !!!
+
 use git2::Repository;
 use serde::Serialize; // import qui permet d'utiliser #[derive(Serialize)]
 use std::process::Command;
@@ -12,6 +17,7 @@ pub struct CommitInfo {
     pub author: String,
     pub parents: Vec<String>,
     pub branches: Vec<String>, //
+    pub is_head: bool,
 }
 
 #[tauri::command]
@@ -34,7 +40,6 @@ fn setup_exercise_repo(
     // si il échoue il fait un Err() qui doit être déballé et convertit en string pourquoi ? parce qu'on a dit dans Result<String, String> que en cas de réussite on doit avoir un string et pareil en cas d'echec
 
     // l'idée ici est qu'on va venir boucler sur setupCommands car il s'agit d'une liste de commande git pour venir les executer un à un
-    // 
 
     for cmd in setup_commands { // on parcour notre array d'array, cmd étant un array
 
@@ -113,11 +118,19 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     Repository::open(&path) a comme résultat git2::Ok, en cas de git2::Error pas de valeur attribué*/
 
     let mut branch_tips: Vec<(String, git2::Oid)> = Vec::new();
-
     // Vec est notre array, chaque element sera un tuple avec deux valeur un string (nom de la bracche) et git2:Oid (le hash du commit parent)
 
-    /* -------------------------- IA ----------------------------- */
-    if let Ok(branches) = repo.branches(Some(git2::BranchType::Local)) {
+    if let Ok(branches) = repo.branches(Some(git2::BranchType::Local)) { 
+        // .branches() c'est la méthode de git2 permettant de fouille dans .git/refs/heads/ pour trouver les branches existantes
+
+        // cependant comme le dossier .git/refs possède le sous dossier heads/ et remotes/ 
+        // On doit filtrer de facon à uniquement récupéré dans le dossier heads/ nos branches en locales
+
+        // c'est pour cette raison qu'on vient filtrer avec git2::BranchType::Local
+        // MAIS la méthode .branches() attend un seul paramètre de type Option<BrancheType> 
+
+        // on vient utiliser .Some() pour convertir la donnée en Option<BranchType>
+        
         for b in branches.flatten() {
             let (branch, _) = b;
             if let (Ok(Some(nom)), Some(target)) = (branch.name(), branch.get().target()) {
@@ -126,12 +139,23 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
         }
     }
 
-    branch_tips.sort_by_key(|(nom, _)| if nom == "main" { 0 } else { 1 }); // on trie le array en fonction, on vient détruire la tuple pour en extraire la valeur nom 
+    branch_tips.sort_by_key(|(nom, _)| if nom == "main" { 0 } else { 1 }); 
+    // on trie le array en fonction, on vient détruire la tuple pour en extraire la valeur nom 
     // if nom est main il retourne 0 si autre autre que main alors retourne 1
 
     let mut owner: HashMap<String, String> = HashMap::new(); 
     // pour rappelle un hashmap est un structure qui contient des information sous la forme clé : valeur
     // contrairement à structure on vient uniquement définir le type des clé (ici string) et leur type de valeur (string auss)
+
+    let head_commit_id = repo
+    .head() 
+    .ok()
+    .and_then(|r| r.peel_to_commit().ok())
+    .map(|c| c.id());
+
+    // l'idée ici est qu'on lit le .git/HEAD, le fichier contient un text comme ref: refs/heads/main il indique le chemin vers un second fichier qui lui contient le hash du commit
+    // la bonne nouvelle c'est que la méthode .head() de git::2 permet déja de faire tout ca !
+
 
     for (branch_name, tip_oid) in &branch_tips {
         let mut branch_revwalk = repo.revwalk().map_err(|e| e.to_string())?;
@@ -141,6 +165,7 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
         for id in branch_revwalk {
             let oid = id.map_err(|e| e.to_string())?;
             let commit_id_str = oid.to_string();
+
             if owner.contains_key(&commit_id_str) { 
                 break;
             }
@@ -162,14 +187,17 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     
     En cas de succès uniquement, en cas d'erreur il ne recevra pas de valeur car on a le ? */
 
-    // revwalk.push_head().map_err(|e| e.to_string())?; on indique à l'itérateur revwalk de commencer son parcour à partir de HEAD
-
     let mut commits = Vec::new(); // on créer une list  vide mutable car on va ajouter des items dedans
+
 
     for id in revwalk { // on remonte vers le commit le plus anciens
         let oid = id.map_err(|e| e.to_string())?; // oid (object identifier), on attribue le hash en cas de non erreur 
         let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
         // commilt on attribue à commit la structure rust (objet) du commit qu'on cherche sur base du hash, cette structure rust contient le message, l'auteur, la date etc ... du commit 
+
+        let is_head = Some(oid) == head_commit_id; // on déclare une variable is_head
+        // on emballe oid dans une boite Option  pour qu'il soit du même type que head_commit_id
+        // is_head est automatiquement mit à true si les valeur sont les mêmes
 
         let commit_id_str = oid.to_string();
         let parents = commit.parent_ids().map(|p| p.to_string()).collect();
@@ -204,6 +232,7 @@ fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
             author: commit.author().name().unwrap_or("Inconnu").to_string(),
             parents,
             branches: mes_branches,
+            is_head,
         });
 
         // on vient push dans la liste vide commits 
@@ -252,8 +281,6 @@ mod tests {
         let tree_oid = index.write_tree().unwrap();
         let tree = repo.find_tree(tree_oid).unwrap();
 
-        /* -----------------------------------  IA ----------------------- ----------------------- */
-
         let commit_oid = repo.commit(
             Some("HEAD"),
             &signature,
@@ -272,7 +299,6 @@ mod tests {
         assert_eq!(commits[0].message, "Initial commit");
         assert_eq!(commits[0].author, "Alice");
         assert!(commits[0].parents.is_empty());
-        /* -----------------------------------  IA ----------------------- ----------------------- */
     }
 
     // Scénario : le path en paramètre n'est pas cel d'un dépot git valide, le .git/ n'y est pas
@@ -346,7 +372,6 @@ mod tests {
         assert_eq!(on_main.parents, vec![base_commit_oid.to_string()]);
         assert_eq!(on_feature.parents, vec![base_commit_oid.to_string()]);
 
-         /* -----------------------------------  IA ----------------------- ----------------------- */
     }
 
 
