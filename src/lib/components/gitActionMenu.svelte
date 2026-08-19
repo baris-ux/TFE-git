@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { command } from "$app/server";
   import { dropdownGitActions } from "$lib/config/GitActionsMenu";
   import { commandDetails } from "$lib/config/commandDetails";
   import CloseButton from "./CloseButton.svelte";

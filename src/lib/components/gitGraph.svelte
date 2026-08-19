@@ -95,7 +95,14 @@
     //gitgraphElement.textContent = "";
 
     const gitgraph = createGitgraph(gitgraphElement, { template: myGitTheme });
-    const branches: Record<string, any> = {}; // on créer un objet vide, Record<> indique qu'il s'agit d'un objet, string indique que la clé sera du string, any indique que la valeur peut etre de n'importe quel type
+    type BranchType = ReturnType<typeof gitgraph.branch>;
+    const branches: Record<string, BranchType> = {};
+    // on créer un objet vide, Record<> indique qu'il s'agit d'un objet, string indique que la clé sera du string, any indique que la valeur peut etre de n'importe quel type
+    // note : on utilisait any avant mais j'ai finis par mêttre  BranchType à la place qu'on définit juste au dessus
+    // le github action voulait qu'on utilisait une variable typé hors any ne l'est pas
+    // on déclare BranchType avec le type renvoyé par la fonction .branch()
+    // les clé sont en string, les valeur auront le type objet
+
     branches["main"] = gitgraph.branch("main"); // Reçoit le bleu par défaut
 
     const reversedCommits = [...commitsList].reverse();
