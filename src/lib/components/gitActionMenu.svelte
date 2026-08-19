@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { command } from "$app/server";
   import { dropdownGitActions } from "$lib/config/GitActionsMenu";
   import { commandDetails } from "$lib/config/commandDetails";
   import CloseButton from "./CloseButton.svelte";
@@ -59,7 +60,7 @@
         </span>
       </div>
     </header>
-    {#each dropdownGitActions as action}
+    {#each dropdownGitActions as action (action.command)}
       <!-- on vient créer tous les boutons dans notre liste d'objets -->
       <button class="dropdown-item" onclick={() => toggleMenu(action.command)}>
         {action.label}
@@ -67,7 +68,7 @@
 
       {#if activeMenu === action.command && action.subMenu}
         <div class="sub-menu">
-          {#each action.subMenu as sub}
+          {#each action.subMenu as sub (sub.command)}
             <div class="sub-item-row">
               <button
                 class="sub-item"
@@ -95,7 +96,7 @@
         chacun de ces badges :
       </p>
       <ul class="legend-list">
-        {#each Object.entries(riskLegends) as [key, text]}
+        {#each Object.entries(riskLegends) as [key, text] (key)}
           <li>
             <div class="badge-wrapper">
               <span class="badge {key}">{key}</span>
