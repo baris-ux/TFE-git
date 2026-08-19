@@ -92,7 +92,7 @@
     }
 
     //gitgraphElement.innerHTML = ""; // On néttoie la DOM à chaque fois quela fonction renderGitGraph est appelé pour éviter pour déssiner un nouvel arbre git
-    gitgraphElement.textContent = "";
+    //gitgraphElement.textContent = "";
 
     const gitgraph = createGitgraph(gitgraphElement, { template: myGitTheme });
     const branches: Record<string, any> = {}; // on créer un objet vide, Record<> indique qu'il s'agit d'un objet, string indique que la clé sera du string, any indique que la valeur peut etre de n'importe quel type
@@ -203,6 +203,8 @@
   }
 
   $effect(() => {
+    // il execute la fonction renderGitGraph(commits) et le réexcute automaitiquement des qu'une vairable
+    // réactive change dans la fonction renderGitGraph()
     renderGitGraph(commits);
   });
 </script>
@@ -225,7 +227,17 @@
     class="canvas-world"
     style="transform: translate3d({panX}px, {panY}px, 0) scale({zoom});"
   >
-    <div bind:this={gitgraphElement}></div>
+    {#key commits}
+      <!-- "Utilise la variable commits comme clé d'identification de tout ce qui se trouve entre {#key} et {/key}.
+      Tant que cette clé ne change pas, laisse le <div> tranquille. 
+      Mais dès que la valeur ou la référence de commits change, considère que ce bloc est périmé : 
+      détruis-le entièrement et reconstruis-le à neuf." 
+      
+      --gemini j'ai trouvé que son explication était bien meilleur que le miens, 
+
+      ici il permet de redéssiner le gitgraph, il permet d'éviter le warning obtenu avec le github action lorsqu'on utilisait ==> gitgraphElement.textContent = ""-->
+      <div bind:this={gitgraphElement}></div>
+    {/key}
   </div>
 
   <div class="zoom-controls">

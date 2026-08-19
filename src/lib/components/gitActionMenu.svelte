@@ -42,7 +42,7 @@
     <header class="git-actions-header">
       <div class="title-group">
         <h1>Menu d'actions guidées</h1>
-        <button class="legend-btn" onclick={toggleLegendModal}>
+        <button class="legend-btn" role="button" onclick={toggleLegendModal}>
           Légende des risques
         </button>
       </div>
@@ -310,7 +310,8 @@
   .title-group {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 25px;
   }
 
   .title-group h1 {
@@ -332,70 +333,71 @@
     color: #4ade80; /* Vert discret */
   }
 
+  /* css du bouton repris sur un site et non généré par IA */
+
   .legend-btn {
-    padding: 0.6em 2em;
+    all: unset;
+    height: 30px;
+    font-size: 16px;
+    background: transparent;
     border: none;
-    outline: none;
-    color: rgb(255, 255, 255);
-    background: #111;
-    cursor: pointer;
     position: relative;
-    z-index: 0;
-    border-radius: 10px;
+    color: #f0f0f0;
+    cursor: pointer;
+    z-index: 1;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
   }
 
-  .legend-btn:before {
-    content: "";
-    background: linear-gradient(
-      45deg,
-      #ff0000,
-      #ff7300,
-      #fffb00,
-      #48ff00,
-      #00ffd5,
-      #002bff,
-      #7a00ff,
-      #ff00c8,
-      #ff0000
-    );
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    background-size: 400%;
-    z-index: -1;
-    filter: blur(5px);
-    -webkit-filter: blur(5px);
-    width: calc(100% + 4px);
-    height: calc(100% + 4px);
-    animation: glowing-button-85 20s linear infinite;
-    transition: opacity 0.3s ease-in-out;
-    border-radius: 10px;
-  }
-
-  @keyframes glowing-button-85 {
-    0% {
-      background-position: 0 0;
-    }
-    50% {
-      background-position: 400% 0;
-    }
-    100% {
-      background-position: 0 0;
-    }
-  }
-
-  .legend-btn:after {
-    z-index: -1;
+  .legend-btn::after,
+  .legend-btn::before {
     content: "";
     position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: -99999;
+    transition: all 0.4s;
+  }
+
+  .legend-btn::before {
+    transform: translate(0%, 0%);
     width: 100%;
     height: 100%;
-    background: #222;
-    left: 0;
-    top: 0;
+    background: #28282d;
     border-radius: 10px;
+  }
+
+  .legend-btn::after {
+    transform: translate(10px, 10px);
+    width: 35px;
+    height: 35px;
+    background: #ffffff15;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 50px;
+  }
+
+  .legend-btn:hover::before {
+    transform: translate(5%, 20%);
+    width: 110%;
+    height: 110%;
+  }
+
+  .legend-btn:hover::after {
+    border-radius: 10px;
+    transform: translate(0, 0);
+    width: 100%;
+    height: 100%;
+  }
+
+  .legend-btn:active::after {
+    transition: 0s;
+    transform: translate(0, 5%);
   }
 </style>
