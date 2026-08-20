@@ -50,3 +50,12 @@ jobs:
 
       - name: Lancer les tests unitaires Rust
         run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: Installer les dépendances système Tauri
+        run: |
+          sudo apt install \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
