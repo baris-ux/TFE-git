@@ -8,7 +8,12 @@
 
   let tabs = $state<TerminalLab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
   let activeTab = $state<string | null>(null); // cette variable contiendra l'ID de l'instance du terminal !!!
-  let { loadGitHistory } = $props();
+
+  let { loadGitHistory }: { loadGitHistory?: () => void } = $props();
+  //    \_____________/     \____________/     \________/
+  //        1. Variable       2. Nom de la    3. Type de la
+  //                             clé              valeur
+
   type Pty = ReturnType<typeof spawn>; // pour corriger ce que me dit le github action je remplace any,
   // je viens donné le type du résultat obtenu par la fonction spawn()
 
