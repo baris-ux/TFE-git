@@ -42,6 +42,26 @@ fn compare_commit(path: &str, old_commit: &str, new_commit: &str) -> Result<Stri
 }
 
 
+// #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init()) // ca permet d'ouvrir un browser dans l'os (plus pratique que si on ouvre dans le webview)
+        .plugin(tauri_plugin_pty::init()) // ajout du plugin pty permettant de demander à l'os de créer un pseudo terminal
+        .plugin(tauri_plugin_dialog::init()) // ajout du plugin dialog permettant d'ouvrir l'explorateur de fichiers de l'os
+        .invoke_handler(tauri::generate_handler![
+            compare_commit, 
+            git_repository::if_git_repository, 
+            git_repository::get_git,  
+            is_git_installed::verify_if_git_installed, 
+            tuto_exercice_modules::verify_tutorial_step,
+            tuto_exercice_modules::setup_exercise_repo
+            ]
+        )
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+
+
 #[cfg(test)]
 mod tests {
 
@@ -80,25 +100,5 @@ mod tests {
         assert!(result.is_err());
     }
 }
-
-// #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
-pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init()) // ca permet d'ouvrir un browser dans l'os (plus pratique que si on ouvre dans le webview)
-        .plugin(tauri_plugin_pty::init()) // ajout du plugin pty permettant de demander à l'os de créer un pseudo terminal
-        .plugin(tauri_plugin_dialog::init()) // ajout du plugin dialog permettant d'ouvrir l'explorateur de fichiers de l'os
-        .invoke_handler(tauri::generate_handler![
-            compare_commit, 
-            git_repository::if_git_repository, 
-            git_repository::get_git,  
-            is_git_installed::verify_if_git_installed, 
-            tuto_exercice_modules::verify_tutorial_step,
-            tuto_exercice_modules::setup_exercise_repo
-            ]
-        )
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
-
 
 
