@@ -21,7 +21,6 @@ export default defineConfig([
         // marqué comme erreur
         ...globals.node,
         // on indique que le mot process ne doit pas être marqué comme une erreur
-        globals: globals.node,
       },
       parserOptions: {
         parser: ts.parser,
