@@ -109,10 +109,10 @@
     // on a besoin de reversedCommit pour déssiner les commit du plus ancien au plus récent
     // gitgraph/js ne sait pas déssiner un commit parent à partir de l'enfant
 
-    const totalCommits = reversedCommits.length;
+    //const totalCommits = reversedCommits.length;
     const commitsById = new Map(commitsList.map((c) => [c.id, c]));
 
-    reversedCommits.forEach((c, index) => {
+    reversedCommits.forEach((c) => {
       const currentBranchName =
         Array.isArray(c.branches) && c.branches.length > 0
           ? c.branches[0]

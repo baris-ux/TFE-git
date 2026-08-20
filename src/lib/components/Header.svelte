@@ -29,7 +29,7 @@
       Ouvrir un projet Git
     </button>
 
-    <!-- <a href={resolve("/sandbox")} class="sandbox-btn"> mode bac à sable ⛱️ </a> -->
+    <a href={resolve("/sandbox")} class="sandbox-btn"> mode bac à sable ⛱️ </a>
     <!-- on utilise resolve, il permet d'aider à générer des type les chemins internes -->
     <!-- même si on spéciie le chemin, elle utilise les route généré par le file-based-routing pour généré des url-->
     <!-- à noter que resolveRoute est déprécié, c'est à dire qu'elle fonctionne mais qu'elle sera obselète à l'avenir-->

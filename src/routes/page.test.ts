@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 import { goto } from "$app/navigation";
 import { render } from "@testing-library/svelte"; // sert à charger et manipuler le composant Svelte dans un faux navigateur pendant le tes
 import Page from "./+page.svelte";
