@@ -27,6 +27,14 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ["vite.config.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
   /* ici pour les fichier en .svelte on va venir parser le code typescript ce qui permettra à 
     notre linter de lire et comprendre le code typescript pour le linter*/
 
