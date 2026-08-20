@@ -42,8 +42,6 @@ fn compare_commit(path: &str, old_commit: &str, new_commit: &str) -> Result<Stri
 }
 
 
-// ---------------------------------------------------------- Tests unitaires ----------------------------------------------------------
-
 #[cfg(test)]
 mod tests {
 
