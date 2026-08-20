@@ -53,6 +53,8 @@ jobs:
 
       - name: Installer les dépendances système Tauri
         run: |
+          sudo apt-get update
+          sudo apt-get install -y \
           sudo apt install \
             libwebkit2gtk-4.1-dev \
             build-essential \
