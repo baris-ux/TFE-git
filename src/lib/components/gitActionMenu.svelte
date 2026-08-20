@@ -42,7 +42,7 @@
     <header class="git-actions-header">
       <div class="title-group">
         <h1>Menu d'actions guidées</h1>
-        <button class="legend-btn" role="button" onclick={toggleLegendModal}>
+        <button class="legend-btn" onclick={toggleLegendModal}>
           Légende des risques
         </button>
       </div>

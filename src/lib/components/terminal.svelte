@@ -9,6 +9,8 @@
   let tabs = $state<TerminalLab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
   let activeTab = $state<string | null>(null); // cette variable contiendra l'ID de l'instance du terminal !!!
   let { loadGitHistory } = $props();
+  type Pty = ReturnType<typeof spawn>; // pour corriger ce que me dit le github action je remplace any,
+  // je viens donné le type du résultat obtenu par la fonction spawn()
 
   interface TerminalLab {
     id: string; //chaque instance de terminal aura son id unique
@@ -19,7 +21,7 @@
     fitAddon?: FitAddon; // fitAddon c'est une class contenu dans le package "@xterm/addon-fit", elle définit une structure d'objet et par conséquent on peut l'utiliser comme type
     // il faut que chaque instance a cette clé car chaque terminal a besoin que le nombre de ligne et colonne s'adaptent au div parent
 
-    pty?: unknown; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
+    pty?: Pty; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
 
     resizeObserver?: ResizeObserver; // un écouteur d'évènement,
     // il est déja intégré dans le navigateur pas besoin de l'installer on vient faire une déclaration de type
