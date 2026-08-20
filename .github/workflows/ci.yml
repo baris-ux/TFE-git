@@ -20,6 +20,18 @@ jobs:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
+      - name: Installer les dépendances système Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          sudo apt install \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
       - name: Configurer pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -50,15 +62,3 @@ jobs:
 
       - name: Lancer les tests unitaires Rust
         run: cargo test --manifest-path src-tauri/Cargo.toml
-
-      - name: Installer les dépendances système Tauri
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          sudo apt install \
-            libwebkit2gtk-4.1-dev \
-            build-essential \
-            libssl-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev
