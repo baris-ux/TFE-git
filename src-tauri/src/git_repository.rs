@@ -157,6 +157,8 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
 #[cfg(test)]
 mod tests {
 
+    use super::*;
+
     // Scénario : dépot avec un seul commit racine sur une seule branche
     // Vérifie que get_git extrait correctement id/message/author et que parents est vide
     #[test]
