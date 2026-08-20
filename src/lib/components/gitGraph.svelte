@@ -146,7 +146,7 @@
       ) {
         branches[currentBranchName].merge(
           branches[sourceBranchName],
-          commitOptions,
+          commitOptions.subject, // utilisation du paramètre subject à l'objet coomitOptions
         );
       } else {
         branches[currentBranchName].commit(commitOptions);
