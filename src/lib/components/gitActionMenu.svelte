@@ -107,16 +107,14 @@
     </div>
   {:else if selectedInfo}
     {@const info = commandDetails[selectedInfo]}
-
     <div class="info-box">
       {#if info}
         <h1>{info.title}</h1>
         <span class="badge {info.riskLevel}">{info.riskLevel}</span>
         <p>{info.description}</p>
 
-        {#if info.example}
-          <code>{info.example}</code>
-        {/if}
+        <code>{info.example}</code>
+        <code>{info.output}</code>
 
         <button
           class="confirm-button"

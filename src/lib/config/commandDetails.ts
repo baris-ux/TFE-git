@@ -2,7 +2,8 @@ export interface CommandDetail {
   title: string;
   description: string;
   example?: string;
-  riskLevel?: "safe" | "normal" | "dangereux";
+  riskLevel?: "safe" | "normal" | "danger";
+  output?: string;
 }
 
 export const commandDetails: Record<string, CommandDetail> = {
@@ -31,8 +32,18 @@ export const commandDetails: Record<string, CommandDetail> = {
   "git branch -a": {
     title: "Enregistrer les modifications",
     description:
-      "Crée un point de sauvegarde (snapshot) dans l'historique Git.",
-    example: 'git commit -m "Mon message"',
+      "Affiche les branches locales ainsi que les branches de suivi à distance connues par le dépôt local.",
+    example: "git branch -a",
+    output:
+      "* main\n  feature/login\n  remotes/origin/main\n  remotes/origin/feature/",
     riskLevel: "safe",
+  },
+
+  "git branch -d": {
+    title: "Supprimer une branche locale de force",
+    description:
+      "Supprime une branche locale, même si son contenu n’a pas encore été fusionné dans une autre branche.",
+    example: "git branch -d <nom-branche>",
+    riskLevel: "danger",
   },
 };

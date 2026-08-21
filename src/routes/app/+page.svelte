@@ -5,7 +5,7 @@
 
   import Header from "$lib/components/Header.svelte";
   import GitActionMenu from "$lib/components/gitActionMenu.svelte";
-  import GitGraph from "$lib/components/gitGraph.svelte";
+  import GitGraph from "$lib/components/gitgraph/GitGraph.svelte";
   import Terminal from "$lib/components/terminal.svelte";
 
   import { type CommitInfo } from "$lib/config/GitActionsMenu";

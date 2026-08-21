@@ -2,8 +2,11 @@
   import { createGitgraph } from "@gitgraph/js";
   import { myGitTheme } from "$lib/config/gitTheme";
   import type { CommitInfo } from "$lib/config/GitActionsMenu";
-  import CloseButton from "./CloseButton.svelte";
-  import { invoke } from "@tauri-apps/api/core";
+  import CloseButton from "../CloseButton.svelte";
+
+  import { CommitInteractionState } from "./CommitInteractionState.svelte";
+  import CommitDetailPanel from "./CommitDetailsPanel.svelte";
+  import ComparaisonPanel from "./CommitComparaisonPanel.svelte";
 
   let {
     activeView,
@@ -17,6 +20,9 @@
 
   // beaucoup de variable qui sont déclaré mais chacun ont un rôle à joué
 
+  const commitState = new CommitInteractionState(); // le new ne s'utilisque pour instancier des classes TypeScript
+  //const commitDetail = ActionPanel();
+
   let gitgraphElement = $state<HTMLDivElement>();
   let viewportElement = $state<HTMLDivElement>();
 
@@ -26,16 +32,6 @@
   let isDragging = $state(false);
   let dragStartX = $state(0);
   let dragStartY = $state(0);
-
-  let isBarActive = $state(false); // c'est le menu d'intéraction qu'on met à faux par défaut pour qu'il ne soit pas affiché
-  let commitInfoDisplayed = $state(false);
-  let isComparaisonActive = $state(false);
-  let diffResult = $state<string | null>(null);
-  let diffError = $state<string | null>(null);
-  let firstHash = $state<string | null>(null);
-  let secondHash = $state<string | null>(null);
-  let selectedCommit = $state<CommitInfo | null>(null); // cette variable va contenir l'objet CommitInfo qu'on a définit dans GitActionMenu.ts
-  // il va stocker les différent information du noeud sur lequel on va cliquer sur un noeud
 
   function handleMouseDown(e: MouseEvent) {
     if ((e.target as HTMLElement).closest(".panel-card, circle, button"))
@@ -131,7 +127,7 @@
         hash: c.id,
         author: c.author,
         tag: isHead ? "HEAD" : undefined,
-        onClick: () => openBoxOnCommitClick(c),
+        onClick: () => commitState.openBoxOnCommitClick(c, path),
       };
 
       const isMerge = Array.isArray(c.parents) && c.parents.length > 1;
@@ -152,60 +148,6 @@
         branches[currentBranchName].commit(commitOptions);
       }
     });
-  }
-
-  function openBoxOnCommitClick(commit: CommitInfo) {
-    // on passe en paramètre l'objet CommitInfo définit dans le config/GitActionsMenu.ts
-    if (isComparaisonActive) {
-      if (commit.id === firstHash) {
-        diffError = "Choisis un commit différent du premier.";
-        return;
-      }
-      secondHash = commit.id;
-      commitComparaison();
-      return;
-    }
-
-    selectedCommit = commit;
-    commitInfoDisplayed = false;
-    isBarActive = true;
-  }
-
-  function displayCommitInfo() {
-    commitInfoDisplayed = true;
-    isBarActive = false;
-  }
-
-  function startComparaison() {
-    if (!selectedCommit) return;
-    // si selectedCommit est un objet renvoit false
-    // si c'est false on return  pour arrêter toute de suite l'execution de la fonction
-    firstHash = selectedCommit.id; // on récupère le hash du commit déja selectionné (lorsqu'on a cliquer pour faire apparaitre le menu)
-    secondHash = null; // on set toute les valeur à null
-    diffResult = null;
-    diffError = null;
-    isBarActive = false; // on ferme le menu d'intéraction
-    isComparaisonActive = true;
-  }
-
-  function cancelComparaison() {
-    isComparaisonActive = false;
-    firstHash = null;
-    secondHash = null;
-  }
-
-  async function commitComparaison() {
-    if (firstHash === null || secondHash === null || path === null) return;
-    diffError = null;
-    try {
-      diffResult = await invoke<string>("compare_commit", {
-        path,
-        oldCommit: firstHash,
-        newCommit: secondHash,
-      });
-    } catch (err) {
-      diffError = String(err);
-    }
   }
 
   $effect(() => {
@@ -255,27 +197,37 @@
 
   <!-- notre menu d'actions sur le noeud, on le met comme enfant du <div> canvas-viewport -->
   <!-- cela permet à ce qu'il reste statique contrairement au <div> canvas-world -->
-  {#if isBarActive}
+  {#if commitState.isBarActive}
     <div class="panel-card">
       <div class="panel-header">
         <div class="header-title">
-          <span class="commit-badge">{selectedCommit?.id.slice(0, 7)}</span>
+          <span class="commit-badge"
+            >{commitState.selectedCommit?.id.slice(0, 7)}</span
+          >
           <h3>Actions Commit</h3>
         </div>
-        <CloseButton onclick={() => (isBarActive = false)} />
+        <CloseButton onclick={() => (commitState.isBarActive = false)} />
       </div>
 
-      <p class="commit-summary">{selectedCommit?.message}</p>
+      <p class="commit-summary">
+        {commitState.selectedCommit?.message}
+      </p>
 
       <div class="action-buttons">
-        <button class="action-btn" onclick={displayCommitInfo}>
+        <button
+          class="action-btn"
+          onclick={() => commitState.displayCommitInfo()}
+        >
           <div class="btn-text">
             <span class="btn-title">Détails du commit</span>
             <span class="btn-sub">Auteur, parents et hash complet</span>
           </div>
         </button>
 
-        <button class="action-btn" onclick={startComparaison}>
+        <button
+          class="action-btn"
+          onclick={() => commitState.startComparaison()}
+        >
           <div class="btn-text">
             <span class="btn-title">Comparer avec...</span>
             <span class="btn-sub">Sélectionner un 2ᵉ commit</span>
@@ -283,71 +235,10 @@
         </button>
       </div>
     </div>
-  {:else if commitInfoDisplayed}
-    <div class="panel-card">
-      <div class="panel-header">
-        <div class="header-title">
-          <span class="commit-badge">{selectedCommit?.id.slice(0, 7)}</span>
-          <h3>Détails du commit</h3>
-        </div>
-        <CloseButton onclick={() => (commitInfoDisplayed = false)} />
-      </div>
-
-      <div class="details-list">
-        <div class="detail-item">
-          <span class="detail-label">Message</span>
-          <p class="detail-value message">{selectedCommit?.message}</p>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Auteur</span>
-          <p class="detail-value">{selectedCommit?.author}</p>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Hash complet</span>
-          <code class="detail-value hash">{selectedCommit?.id}</code>
-        </div>
-        {#if selectedCommit?.parents?.length}
-          <div class="detail-item">
-            <span class="detail-label">Parent(s)</span>
-            <code class="detail-value hash"
-              >{selectedCommit.parents.join(", ")}</code
-            >
-          </div>
-        {/if}
-      </div>
-    </div>
-  {:else if isComparaisonActive}
-    <div class="panel-card diff-card">
-      <div class="panel-header">
-        <div class="header-title">
-          <h3>Comparaison</h3>
-        </div>
-        <CloseButton onclick={cancelComparaison} />
-      </div>
-
-      <div class="diff-hashes">
-        <div class="hash-tag">
-          <span>Base :</span>
-          <code>{firstHash?.slice(0, 7)}</code>
-        </div>
-        <span class="arrow">➔</span>
-        <div class="hash-tag">
-          <span>Cible :</span>
-          <code>{secondHash ? secondHash.slice(0, 7) : "..."}</code>
-        </div>
-      </div>
-
-      {#if secondHash === null}
-        <p class="diff-hint">Cliquez sur un second commit dans le graphe...</p>
-      {:else if diffResult}
-        <pre class="diff-output">{diffResult}</pre>
-        <!-- si diffResult est une chaine vide (j'ai beaucoup galéré sur celui la ...) -->
-      {:else if diffResult === ""}
-        <p class="diff-empty">Aucune différence détectée entre ces commits.</p>
-      {:else if diffError}
-        <p class="diff-error">{diffError}</p>
-      {/if}
-    </div>
+  {:else if commitState.commitInfoDisplayed}
+    <CommitDetailPanel state={commitState} />
+  {:else if commitState.isComparaisonActive}
+    <ComparaisonPanel state={commitState} />
   {/if}
 </div>
 
@@ -433,7 +324,7 @@
     background: #3f3f46;
   }
 
-  /* Panneau Flottant (Fixé dans le coin haut-droit) */
+  /* necessaire pour le css du clique sur un noeud pour afficher le menu d'intéraction */
   .panel-card {
     position: absolute;
     top: 16px;
@@ -451,10 +342,6 @@
     flex-direction: column;
     gap: 12px;
     animation: slideIn 0.15s ease-out;
-  }
-
-  .diff-card {
-    width: 340px;
   }
 
   @keyframes slideIn {
@@ -558,102 +445,6 @@
     font-size: 0.7rem;
     color: #71717a;
     font-weight: normal;
-  }
-
-  .details-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    background: #27272a;
-    padding: 6px 8px;
-    border-radius: 4px;
-  }
-
-  .detail-label {
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #71717a;
-    font-weight: 600;
-  }
-
-  .detail-value {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #e4e4e7;
-  }
-
-  .detail-value.message {
-    font-weight: 500;
-    color: #fafafa;
-  }
-
-  .detail-value.hash {
-    font-family: monospace;
-    font-size: 0.72rem;
-    color: #60a5fa;
-    word-break: break-all;
-  }
-
-  /* Diff */
-  .diff-hashes {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #27272a;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-  }
-
-  .hash-tag {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: #a1a1aa;
-  }
-
-  .hash-tag code {
-    color: #60a5fa;
-    font-weight: bold;
-  }
-
-  .diff-hint {
-    font-size: 0.8rem;
-    color: #eab308;
-    margin: 4px 0;
-  }
-
-  .diff-output {
-    margin: 0;
-    padding: 8px;
-    background: #111113;
-    border-radius: 4px;
-    border: 1px solid #2e2e36;
-    font-size: 0.72rem;
-    color: #d4d4d8;
-    max-height: 220px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-  .diff-empty {
-    font-size: 0.8rem;
-    color: #4ade80;
-    margin: 0;
-  }
-
-  .diff-error {
-    font-size: 0.8rem;
-    color: #f87171;
-    margin: 0;
   }
 
   .hidden {
