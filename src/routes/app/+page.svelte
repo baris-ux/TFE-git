@@ -93,6 +93,7 @@
   </div>
 
   <Terminal
+    {projectPath}
     bind:this={terminalRef}
     loadGitHistory={() => projectPath && loadGitHistory(projectPath)}
   />
