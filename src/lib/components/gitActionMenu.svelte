@@ -1,8 +1,8 @@
 <script lang="ts">
   import { dropdownGitActions } from "$lib/config/GitActionsMenu";
   import { commandDetails } from "$lib/config/commandDetails";
-  import CloseButton from "./CloseButton.svelte";
-  import Switch from "./Switch.svelte";
+  import CloseButton from "./ui/CloseButton.svelte";
+  import Switch from "./ui/Switch.svelte";
 
   let { activeView, activeMenu, toggleMenu, generateCommand } = $props();
   let sliderValue = $state(true);

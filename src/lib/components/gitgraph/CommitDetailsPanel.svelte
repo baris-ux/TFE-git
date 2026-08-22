@@ -1,6 +1,6 @@
 <script lang="ts">
   import { CommitInteractionState } from "./CommitInteractionState.svelte";
-  import CloseButton from "../CloseButton.svelte";
+  import CloseButton from "../ui/CloseButton.svelte";
 
   let { state }: { state: CommitInteractionState } = $props();
 </script>

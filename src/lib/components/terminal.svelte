@@ -4,7 +4,7 @@
   import { onMount, tick } from "svelte";
   import { FitAddon } from "@xterm/addon-fit";
   import "@xterm/xterm/css/xterm.css";
-  import CloseButton from "./CloseButton.svelte";
+  import CloseButton from "./ui/CloseButton.svelte";
 
   let tabs = $state<TerminalLab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
   let activeTab = $state<string | null>(null); // cette variable contiendra l'ID de l'instance du terminal !!!
