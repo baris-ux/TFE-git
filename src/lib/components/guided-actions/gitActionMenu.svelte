@@ -1,8 +1,8 @@
 <script lang="ts">
   import { dropdownGitActions } from "$lib/config/GitActionsMenu";
-  import { commandDetails } from "$lib/config/commandDetails";
-  import CloseButton from "./ui/CloseButton.svelte";
-  import Switch from "./ui/Switch.svelte";
+  import CloseButton from "../ui/CloseButton.svelte";
+  import Switch from "../ui/Switch.svelte";
+  import CommandInfoPanel from "./CommandInfoPanel.svelte";
 
   let { activeView, activeMenu, toggleMenu, generateCommand } = $props();
   let sliderValue = $state(true);
@@ -34,7 +34,6 @@
 
 <div
   class="dropdown-content"
-  // dropdown-content est le conteneur qui va contenir, notre liste d'action guidé, les "sous actions" ainsi que la fiche d'information
   class:hidden={activeView === "tree"}
   class:full-width={activeView === "actions"}
 >
@@ -85,9 +84,11 @@
     {/each}
   </div>
 
-  {#if legendClicked}
+  {#if selectedInfo}
+    <CommandInfoPanel {selectedInfo} {generateCommand} />
+  {:else if legendClicked}
     <div class="legend-box">
-      <CloseButton onclick={() => (legendClicked = false)} />
+      <CloseButton onclick={toggleLegendModal} />
       <h3>Légende des niveaux de risques</h3>
       <p>
         Lorsque le mode explications est actif, un badge de couleur indique le
@@ -104,30 +105,6 @@
           </li>
         {/each}
       </ul>
-    </div>
-  {:else if selectedInfo}
-    {@const info = commandDetails[selectedInfo]}
-    <div class="info-box">
-      {#if info}
-        <h1>{info.title}</h1>
-        <span class="badge {info.riskLevel}">{info.riskLevel}</span>
-        <p>{info.description}</p>
-
-        <code>{info.example}</code>
-        <code>{info.output}</code>
-
-        <button
-          class="confirm-button"
-          onclick={() => generateCommand(info.example)}>confirmer</button
-        >
-      {:else}
-        <h1>{selectedInfo}</h1>
-        <p>
-          La fiche de cours pour la commande {selectedInfo} viendra très prochainement
-          !
-        </p>
-        <button>confirmer</button>
-      {/if}
     </div>
   {/if}
 </div>
@@ -205,34 +182,6 @@
     color: white;
   }
 
-  .confirm-button {
-    border: none;
-    cursor: pointer;
-    padding: 10px 5px;
-    transition:
-      background-color 150ms ease,
-      box-shadow 150ms ease,
-      transform 100ms ease;
-  }
-
-  .fiche-information {
-    cursor: pointer;
-    border: none;
-    background-color: #3a3a3a;
-    font-weight: bold;
-    color: #ffffff;
-    padding: 10px 14px;
-    border-radius: 4px;
-    transition:
-      background-color 0.2s,
-      color 0.2s;
-  }
-
-  .fiche-information:hover {
-    background-color: #64b5f6;
-    color: #1e1e1e;
-  }
-
   .sub-item-row {
     display: flex;
     align-items: center;
@@ -245,8 +194,7 @@
     min-width: 0;
   }
 
-  .legend-box,
-  .info-box {
+  .legend-box {
     width: 260px;
     background-color: #2b2b2b;
     border: 1px solid #444444;

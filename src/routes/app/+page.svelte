@@ -4,7 +4,7 @@
   import { open } from "@tauri-apps/plugin-dialog";
 
   import Header from "$lib/components/Header.svelte";
-  import GitActionMenu from "$lib/components/gitActionMenu.svelte";
+  import GitActionMenu from "$lib/components/guided-actions/gitActionMenu.svelte";
   import GitGraph from "$lib/components/gitgraph/GitGraph.svelte";
   import Terminal from "$lib/components/terminal.svelte";
 
