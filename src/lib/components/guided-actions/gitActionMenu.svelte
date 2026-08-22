@@ -83,16 +83,6 @@
   {/if}
 </div>
 
-<!-- HTML 
-<button class="button-86" role="button">Button 86</button>
-
-/* CSS 
-.button-86 {
-
-}
-
-!-->
-
 <style>
   .dropdown-content {
     background-color: #505050;
