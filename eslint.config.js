@@ -27,6 +27,16 @@ export default defineConfig([
       },
     },
   },
+
+  {
+    files: ["**/*.ts", "**/*.svelte.ts"],
+    languageOptions: {
+      parser: ts.parser,
+      parserOptions: {
+        sourceType: "module",
+      },
+    },
+  },
   {
     files: ["vite.config.js"],
     languageOptions: {

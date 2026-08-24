@@ -70,7 +70,7 @@ export const commandDetails: Record<string, CommandDetail> = {
       "git add ajoute les modifications sélectionnées à la zone de préparation (staging area). Elles seront incluses dans le prochain commit, mais ne sont pas encore enregistrées dans l’historique Git ni envoyées vers un dépôt distant.",
     syntax: "git add <nom-du-fichier>",
     example: "git add README.txt main.py",
-    riskLevel: "safe",
+    riskLevel: "normal",
     tips: "Pour save plusieurs fichiers il faut les séparé par un espace",
   },
 
@@ -79,7 +79,7 @@ export const commandDetails: Record<string, CommandDetail> = {
     description:
       "git add . permet la même chose que git commit mais elle cible tout les fichiers dans le repertoir ou vous êtes situé et de ses sous-dossiers",
     syntax: "git add .",
-    riskLevel: "safe",
+    riskLevel: "normal",
     tips: "Attention : cette commande ajoute également les fichiers non désirés s'ils ne sont pas listés dans votre fichier .gitignore.",
   },
 };
