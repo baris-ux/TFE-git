@@ -153,7 +153,7 @@
     const currentTab = tabs.find((t) => t.id === activeTab); // dans l'array do'bjet tabs cherche une corresspondence entre l'id de l'objet et activeTab (c'est un id)
     if (currentTab?.pty) {
       // si currentTab existe ET que l'attribut pty existe
-      currentTab.pty.write(`${command}\n`);
+      currentTab.pty.write(`${command}`); // suppresion de \n
 
       setTimeout(() => {
         if (loadGitHistory) {

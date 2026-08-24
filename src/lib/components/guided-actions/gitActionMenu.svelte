@@ -77,7 +77,13 @@
   </div>
 
   {#if selectedInfo}
-    <CommandInfoPanel {selectedInfo} {generateCommand} />
+    <CommandInfoPanel
+      {selectedInfo}
+      {generateCommand}
+      oncloseinfopanel={() => {
+        selectedInfo = null;
+      }}
+    />
   {:else if legendClicked}
     <LegendInfoPanel onclose={() => (legendClicked = false)} />
   {/if}

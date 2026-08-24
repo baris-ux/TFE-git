@@ -67,7 +67,6 @@
 
   function generateCommand(command: string) {
     if (terminalRef) {
-      // si le pty n'exsite pas
       terminalRef.sendCommand(`${command}`);
     }
   }

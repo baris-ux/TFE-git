@@ -1,10 +1,13 @@
 <script lang="ts">
   import { commandDetails } from "$lib/config/commandDetails";
+  import CloseButton from "../ui/CloseButton.svelte";
 
   let {
+    oncloseinfopanel,
     selectedInfo,
     generateCommand,
   }: {
+    oncloseinfopanel: () => void;
     selectedInfo: string;
     generateCommand: (Command: string) => void;
   } = $props();
@@ -15,13 +18,29 @@
 <!--{#if selectedInfo}
   {@const info = commandDetails[selectedInfo]}-->
 <div class="info-box">
+  <CloseButton onclick={oncloseinfopanel} />
   {#if info}
     <h1>{info.title}</h1>
     <span class="badge {info.riskLevel}">{info.riskLevel}</span>
     <p>{info.description}</p>
 
-    <code>{info.example}</code>
-    <code>{info.output}</code>
+    {#if info.syntax}
+      <div class="code-block">
+        <span class="label">Syntaxe :</span>
+        <code>{info.syntax}</code>
+      </div>
+    {/if}
+
+    {#if info.example}
+      <code>{info.example}</code>
+    {/if}
+
+    {#if info.output}
+      <div class="code-block">
+        <span class="label">Résultat :</span>
+        <pre class="terminal-preview">{info.output}</pre>
+      </div>
+    {/if}
 
     <button class="confirm-button" onclick={() => generateCommand(selectedInfo)}
       >confirmer</button
@@ -87,6 +106,35 @@
     width: fit-content;
     padding: 5px 10px;
     border-radius: 5px;
+    font-weight: bold;
+  }
+
+  .code-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  code,
+  .terminal-preview {
+    background-color: #121212;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 0.85rem;
+    color: #4ec9b0;
+    border: 1px solid #2d2d2d;
+    border-radius: 12px;
+  }
+
+  .terminal-preview {
+    margin: 0;
+    white-space: pre-wrap; /* Conserve les retours à la ligne \n */
+    color: #9cdcfe;
+  }
+
+  .label {
+    color: #888888;
     font-weight: bold;
   }
 </style>

@@ -42,7 +42,7 @@ export const dropdownGitActions: GitAction[] = [
     label: "Ajouter des modifications",
     command: "git add",
     subMenu: [
-      { label: "Ajouter un fichier", command: "git add " },
+      { label: "Ajouter un fichier", command: "git add" },
       { label: "Ajouter toutes les modifications", command: "git add ." },
     ],
   },
