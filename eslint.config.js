@@ -37,6 +37,7 @@ export default defineConfig([
       },
     },
   },
+
   {
     files: ["vite.config.js"],
     languageOptions: {

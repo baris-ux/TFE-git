@@ -49,8 +49,14 @@ describe("dd", () => {
   it("redirige automatiquement vers /app si le cache est présent", () => {
     localStorage.setItem("git-is-installed", "true");
 
+    render(Page); // render permet de monter le composant svelte page dans un faux navigateur
+
+    expect(goto).toHaveBeenCalledWith("/app"); // notre assertion, permet d'indiquer ce que le code est censé produire pour le scénario donné
+  });
+
+  it("Ne pas rediriger si le cache est absent", () => {
     render(Page);
 
-    expect(goto).toHaveBeenCalledWith("/app");
+    expect(goto).not.toHaveBeenCalled;
   });
 });

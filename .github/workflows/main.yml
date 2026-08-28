@@ -1,22 +1,6 @@
-#name: GitHub Actions Demo
-# configuration du trigger, lorsqu'on fait un push d'un tag
-# on peut voir le tag comme un marque page qu'on met sur un commit pour indquer qu'il s'agit de la dernière version qu'on à distribué au public
-# le v* pour n'importe quoi qui commence par v
-#on:
-#  push:
-#    tags:
-#      - "v*"
-#
-#jobs: # ce que le robot github action doit réaliser ...
-#  publish-tauri: #publish-tauri est le nom de la tâches/mission que le robot doit executer
-#    permissions:
-#      contents: write # par défaut il a uniquement une permission en lecture, on donne une permission en écriture, il doit pouvoir créer les fichier .exe et .dmg
-#    strategy: # stragy indique que le robot github action doit executer en parallèle sa tâche publish-tauri
-#      fail-fast:
-#        false # failt-fast permet de faire en sorte que si un des projet executé en parallèle sur les vm de github action échoue, on vient quand même
-#        # finir d'executer les autre taches en parallèle
-#      matrix:
-#       os: []
+# ce code ainsi que les commentaire en anglais proviennent de la documentation officielle de tauri
+# vous pouvez le trouvez à l'adresse suivant : https://v2.tauri.app/fr/distribute/pipelines/github/
+# j'ai cependant du apporter des mofication pour que le worfklow githubAction correspondent au besoin de mon projets
 
 name: "publish"
 
@@ -52,7 +36,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm' # This must match the platform value defined above.
+        if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils

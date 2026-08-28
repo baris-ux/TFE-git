@@ -15,7 +15,6 @@
   // cela permet d'éviter document.getElementById() car nos composant svelte son réutilisable
 
   let commits = $state<CommitInfo[]>([]);
-
   let activeMenu = $state<string | null>(null);
   let projectPath = $state<string | null>(null); // peut contenir un string (le path du dossier) ou alors null (si aucun dossier fournit) ==> la valeur par défaut est null
 
