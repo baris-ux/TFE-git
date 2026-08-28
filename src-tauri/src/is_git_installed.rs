@@ -12,7 +12,6 @@ pub fn verify_if_git_installed() -> bool{
     }
 }
 
-
 #[cfg(test)]
 mod tests {
 

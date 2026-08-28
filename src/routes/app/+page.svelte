@@ -85,7 +85,13 @@
   <Header {projectPath} {toggleView} {selectProject} />
 
   <div class="content-layout">
-    <GitActionMenu {activeView} {activeMenu} {toggleMenu} {generateCommand} />
+    <GitActionMenu
+      {activeView}
+      {activeMenu}
+      path={projectPath}
+      {toggleMenu}
+      {generateCommand}
+    />
 
     <GitGraph {activeView} {commits} path={projectPath} />
   </div>
