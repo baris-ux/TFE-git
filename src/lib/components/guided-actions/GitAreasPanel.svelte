@@ -61,7 +61,7 @@
   </div>
 
   <div class="column">
-    <h3>Repository</h3>
+    <h3>Local Repository</h3>
     <p class="repo-info">Dernier commit validé (HEAD)</p>
   </div>
 </div>

@@ -19,7 +19,27 @@
     path: string | null;
   } = $props();
 
-  // beaucoup de variable qui sont déclaré mais chacun ont un rôle à joué
+  let filterMode = $state<"local" | "distant">("local");
+
+  let distantView = $derived(
+    commits.filter((c) =>
+      c.branches.some(
+        (b) => b.startsWith("origin/") || b.startsWith("remotes/"),
+      ),
+    ),
+  );
+
+  let localView = $derived(
+    commits.filter((c) =>
+      c.branches.some(
+        (b) => !b.startsWith("origin/") && !b.startsWith("remotes/"),
+      ),
+    ),
+  );
+
+  let displayedCommits = $derived(
+    filterMode === "local" ? localView : distantView,
+  );
 
   const commitState = new CommitInteractionState(); // le new ne s'utilisque pour instancier des classes TypeScript
   //const commitDetail = ActionPanel();
@@ -98,14 +118,14 @@
   $effect(() => {
     // il execute la fonction renderGitGraph(commits) et le réexcute automaitiquement des qu'une vairable
     // réactive change dans la fonction renderGitGraph()
-    renderGitGraph(commits);
+    renderGitGraph(displayedCommits);
   });
 </script>
 
-<GitViewport {activeView}>
+<GitViewport {activeView} bind:filterMode>
   <!-- 1. Ce qui va dans la scène zoomable (le graphe) -->
   {#snippet graph()}
-    {#key commits}
+    {#key displayedCommits}
       <div bind:this={gitgraphElement}></div>
     {/key}
   {/snippet}

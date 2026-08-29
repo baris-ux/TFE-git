@@ -14,10 +14,12 @@
     activeView,
     graph,
     children,
+    filterMode = $bindable("local"),
   }: {
     activeView: "split" | "actions" | "tree";
     graph?: Snippet;
     children?: Snippet;
+    filterMode?: "local" | "distant";
   } = $props();
 
   function handleMouseDown(e: MouseEvent) {
@@ -103,6 +105,16 @@
       <div bind:this={gitgraphElement}></div>
     {/key}
   -->
+
+  <div class="toggle local-distant-view">
+    <input
+      type="checkbox"
+      checked={filterMode === "distant"}
+      onchange={(e) =>
+        (filterMode = e.currentTarget.checked ? "distant" : "local")}
+    />
+    <label></label>
+  </div>
 
   <div class="zoom-controls">
     <button onclick={() => (zoom = Math.min(zoom * 1.15, 3.0))}>+</button>
@@ -204,5 +216,83 @@
     opacity: 0;
     pointer-events: none;
     border: none;
+  }
+
+  /* ------------------------- css trouvé sur un site pour le bouton toggle ------------------------------- */
+
+  .local-distant-view {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+  }
+
+  .toggle {
+    position: relative;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .toggle input[type="checkbox"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    opacity: 0;
+  }
+
+  .toggle label {
+    position: relative;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .toggle label:before,
+  .toggle label:after {
+    font-size: 16px;
+    font-weight: bold;
+    font-family: arial;
+    transition: 0.2s ease-in;
+    box-sizing: border-box;
+  }
+
+  .toggle label:before {
+    content: "Local";
+    background: #000;
+    color: #fff;
+    height: 42px;
+    width: 150px;
+    display: inline-flex;
+    align-items: center;
+    padding-left: 15px;
+    border-radius: 4px;
+    transition: 0.5s cubic-bezier(0.52, -0.41, 0.55, 1.46);
+    box-shadow: inset -75px 0px 0 0px #565656;
+  }
+
+  .toggle label:after {
+    content: "Distant";
+    position: absolute;
+    left: 85px;
+    line-height: 42px;
+    top: 0;
+    color: #aaa;
+  }
+
+  .toggle input[type="checkbox"]:checked + label:before {
+    color: #aaa;
+    box-shadow: inset 75px 0px 0 0px #565656;
+    background: #000;
+  }
+
+  .toggle input[type="checkbox"]:checked + label:after {
+    color: #fff;
   }
 </style>
