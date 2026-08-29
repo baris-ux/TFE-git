@@ -129,7 +129,7 @@
     flex-direction: row;
     gap: 15px;
     width: 100%;
-    flex: 4;
+    flex: 3;
     min-height: 0;
   }
 </style>

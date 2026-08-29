@@ -219,7 +219,9 @@
 <style>
   .terminal-wrapper {
     width: 100%;
-    height: 25%;
+    display: flex;
+    height: 30%;
+    min-height: 0;
     flex-direction: column;
   }
 
@@ -244,6 +246,9 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+
+    min-height: 0; /* par défaut il à la valeur auto, on vient mêttre ca pour résoudre le problème de 
+    la poule et de l'oeuf*/
   }
 
   .tab,
