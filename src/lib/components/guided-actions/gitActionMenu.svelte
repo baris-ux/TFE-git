@@ -5,7 +5,22 @@
   import CommandInfoPanel from "./CommandInfoPanel.svelte";
   import GitAreasPanel from "./GitAreasPanel.svelte";
 
-  let { activeView, activeMenu, toggleMenu, generateCommand, path } = $props();
+  let {
+    activeView,
+    activeMenu,
+    toggleMenu,
+    generateCommand,
+    path,
+    refreshGitAreaPanelCount,
+  }: {
+    activeView: "split" | "actions" | "tree";
+    activeMenu: string | null;
+    toggleMenu: (command: string) => void;
+    generateCommand: (command: string) => void;
+    path: string | null;
+    refreshGitAreaPanelCount?: number;
+  } = $props();
+
   let sliderValue = $state(true);
   let selectedInfo = $state<string | null>(null);
   let legendClicked = $state(false);
@@ -104,7 +119,7 @@
   {:else if legendClicked}
     <LegendInfoPanel onclose={() => (legendClicked = false)} />
   {:else if gitState}
-    <GitAreasPanel {path} />
+    <GitAreasPanel {path} {refreshGitAreaPanelCount} />
   {/if}
 </div>
 

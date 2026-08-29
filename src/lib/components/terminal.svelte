@@ -12,7 +12,12 @@
   let {
     loadGitHistory,
     projectPath,
-  }: { loadGitHistory?: () => void; projectPath?: string | null } = $props(); // on récupère le chemin du projet pour s'en servir pour nous
+    handleCommandFinished,
+  }: {
+    loadGitHistory?: () => void;
+    projectPath?: string | null;
+    handleCommandFinished?: () => void;
+  } = $props(); // on récupère le chemin du projet pour s'en servir pour nous
   // placer directement dans le projet sans faire de cd
 
   type Pty = ReturnType<typeof spawn>; // pour corriger ce que me dit le github action je remplace any,
@@ -117,6 +122,7 @@
       if (data === "\r") {
         setTimeout(() => {
           loadGitHistory?.();
+          handleCommandFinished?.();
         }, 400);
       }
     });
@@ -159,6 +165,7 @@
         if (loadGitHistory) {
           loadGitHistory();
         }
+        handleCommandFinished?.();
       }, 400);
     }
   }

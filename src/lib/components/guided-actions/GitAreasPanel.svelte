@@ -3,7 +3,12 @@
 
   let result = $state<string>("");
 
-  let { path } = $props<{ path: string | null }>(); // $props() permet de récupéré des valeurs mais pas de les modifier
+  let { path, refreshGitAreaPanelCount } = $props<{
+    path: string | null;
+    refreshGitAreaPanelCount?: number;
+  }>();
+
+  // $props() permet de récupéré des valeurs mais pas de les modifier
 
   let workingArea = $derived(
     result
@@ -29,6 +34,11 @@
   }
 
   $effect(() => {
+    refreshGitAreaPanelCount;
+    console.log(
+      "2. GitAreasPanel reçoit refreshCount :",
+      refreshGitAreaPanelCount,
+    );
     if (path) {
       getActifFiles();
     }

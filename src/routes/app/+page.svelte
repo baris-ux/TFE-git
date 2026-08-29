@@ -21,6 +21,14 @@
   let activeView = $state<"split" | "actions" | "tree">("split"); // cette variable va permettre de stocker la vue, écrant scinder, full écran sur le menu d'action ou alors full écran sur le graphe visuelle
   let terminalRef = $state<ReturnType<typeof Terminal>>();
 
+  let refreshGitAreaPanelCount = $state(0);
+  // cette variable sera incrémenter chaque fois qu'on entre une commande dans le terminal
+  // chaque incrément nous permettra de mettre à jours le GitAreaPanel
+
+  function handleCommandFinished() {
+    refreshGitAreaPanelCount += 1;
+  }
+
   // fonction qu'on appelle lorsqu'on clique sur un bouton du menu
   function toggleMenu(command: string) {
     if (activeMenu === command) {
@@ -91,6 +99,7 @@
       path={projectPath}
       {toggleMenu}
       {generateCommand}
+      {refreshGitAreaPanelCount}
     />
 
     <GitGraph {activeView} {commits} path={projectPath} />
@@ -99,6 +108,7 @@
   <Terminal
     {projectPath}
     bind:this={terminalRef}
+    {handleCommandFinished}
     loadGitHistory={() => projectPath && loadGitHistory(projectPath)}
   />
 </main>
