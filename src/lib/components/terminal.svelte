@@ -248,7 +248,7 @@
     flex-direction: column;
 
     min-height: 0; /* par défaut il à la valeur auto, on vient mêttre ca pour résoudre le problème de 
-    la poule et de l'oeuf*/
+    la poule et de l'oeuf avec le fitAddon*/
   }
 
   .tab,
