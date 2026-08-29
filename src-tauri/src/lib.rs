@@ -59,6 +59,22 @@ fn get_actif_files(path:String) -> Result <String, String>{
     }
 }
 
+#[tauri::command]
+fn get_not_pushed_commits(path:String) -> Result <String, String>{
+    let output = Command::new("git")
+    .args(["log", "@{u}..HEAD"])
+    .current_dir(&path)
+    .output()
+    .map_err(|e| e.to_string())?;
+
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    }
+    else{
+        Err(String::from_utf8_lossy(&output.stderr).to_string())
+    }
+}
+
 
 // #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
 pub fn run() {
@@ -68,6 +84,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init()) // ajout du plugin dialog permettant d'ouvrir l'explorateur de fichiers de l'os
         .invoke_handler(tauri::generate_handler![
             compare_commit, 
+            get_not_pushed_commits,
             get_actif_files,
             git_repository::if_git_repository, 
             git_repository::get_git,  

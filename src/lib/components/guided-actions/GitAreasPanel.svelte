@@ -2,6 +2,7 @@
   import { invoke } from "@tauri-apps/api/core";
 
   let result = $state<string>("");
+  let notPushed = $state<string>("");
 
   let { path, refreshGitAreaPanelCount } = $props<{
     path: string | null;
@@ -29,18 +30,26 @@
       .filter((item) => item[0] === "A" || item[0] === "M"),
   );
 
+  let unpushedCommits = $derived(
+    notPushed
+      .split("\n")
+      //.map((line) => line.trim())
+      .filter((line) => line.length > 0),
+  );
+
   async function getActifFiles() {
     result = await invoke<string>("get_actif_files", { path });
   }
 
+  async function getNotPushedCommits() {
+    notPushed = await invoke<string>("get_not_pushed_commits", { path });
+  }
+
   $effect(() => {
     refreshGitAreaPanelCount;
-    console.log(
-      "2. GitAreasPanel reçoit refreshCount :",
-      refreshGitAreaPanelCount,
-    );
     if (path) {
       getActifFiles();
+      getNotPushedCommits();
     }
   });
 </script>
@@ -62,7 +71,13 @@
 
   <div class="column">
     <h3>Local Repository</h3>
-    <p class="repo-info">Dernier commit validé (HEAD)</p>
+    {#if unpushedCommits.length === 0}
+      <p>Synchronisé, aucun push en attente</p>
+    {:else}
+      {#each unpushedCommits as item}
+        <p>{item}</p>
+      {/each}
+    {/if}
   </div>
 </div>
 
