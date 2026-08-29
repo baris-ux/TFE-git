@@ -33,7 +33,7 @@
   let unpushedCommits = $derived(
     notPushed
       .split("\n")
-      //.map((line) => line.trim())
+      .map((line) => line.trim())
       .filter((line) => line.length > 0),
   );
 
@@ -47,9 +47,10 @@
 
   $effect(() => {
     refreshGitAreaPanelCount;
-    getNotPushedCommits();
+
     if (path) {
       getActifFiles();
+      getNotPushedCommits();
     }
   });
 </script>
