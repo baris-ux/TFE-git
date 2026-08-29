@@ -80,22 +80,19 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
             let oid = id.map_err(|e| e.to_string())?;
             let commit_id_str = oid.to_string();
 
-            /*if owner.contains_key(&commit_id_str) { 
-                break;
-            }
-
-            owner.insert(commit_id_str, branch_name.clone());*/
-
-            let list = owner.entry(commit_id_str.clone()).or_default();
+            /*let list = owner.entry(commit_id_str.clone()).or_default();
             list.push(branch_name.clone()); 
 
             if list.len() > 1 {
                 break;
+            }*/ 
+
+            let list = owner.entry(commit_id_str.clone()).or_default();
+            if !list.contains(branch_name) {
+                list.push(branch_name.clone());
             }
         }
     }
-
-    /* -------------------------- IA ----------------------------- */
 
     let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
 
