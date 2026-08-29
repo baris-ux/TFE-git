@@ -47,9 +47,9 @@
 
   $effect(() => {
     refreshGitAreaPanelCount;
+    getNotPushedCommits();
     if (path) {
       getActifFiles();
-      getNotPushedCommits();
     }
   });
 </script>
