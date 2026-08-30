@@ -17,10 +17,13 @@
     loadGitHistory?: () => void;
     projectPath?: string | null;
     handleCommandFinished?: () => void;
-  } = $props(); // on récupère le chemin du projet pour s'en servir pour nous
+  } = $props();
+
+  // on récupère le chemin du projet pour s'en servir pour nous
   // placer directement dans le projet sans faire de cd
 
-  type Pty = ReturnType<typeof spawn>; // pour corriger ce que me dit le github action je remplace any,
+  type Pty = ReturnType<typeof spawn>;
+  // pour corriger ce que me dit le github action je remplace any,
   // je viens donné le type du résultat obtenu par la fonction spawn()
 
   interface TerminalLab {
@@ -99,8 +102,6 @@
 
     if (!currentTab?.element) return; //si l'objet currentTab (le terminal) n'a pas l'attrbit/clé element ('c'est qu'il n'est pas déssiné par svelte dans la DOM
     // ) dans ce cas on arrête l'execution de la fonction avec un return
-
-    /* ---------------------------- IA ---------------------------------------------------------------------------------------------------*/
 
     const term = new Terminal({
       // on définit le terminal avec le fonction new Terminal

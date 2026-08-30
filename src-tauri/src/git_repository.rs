@@ -6,11 +6,9 @@ use std::collections::HashMap;
 pub async fn if_git_repository(path : String) -> bool {
     match Repository::open(&path){ // on utilise & pour indiquer qu'on passe une référence au lieu de le copier, on récupère la valeur du path au lieu de le copier
         Ok(_) => { 
-            println!("yes c'est bien ca");
             true
         }
         Err(_) => {
-            println!("nope tu t'es trompé");
             false
         }
     }
@@ -29,20 +27,15 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     Repository::open(&path) a comme résultat git2::Ok, en cas de git2::Error pas de valeur attribué*/
 
     let mut branch_tips: Vec<(String, git2::Oid)> = Vec::new();
-    // Vec est notre array, chaque element sera un tuple avec deux valeur un string (nom de la bracche) et git2:Oid (le hash du commit parent)
+    // Vec est notre array, chaque element sera un tuple avec deux valeur un string (nom de la bracche) 
+    // et git2:Oid (le hash du commit parent)
 
     if let Ok(branches) = repo.branches(None) { 
 
         // .branches() c'est la méthode de git2 permettant de fouille dans .git/refs/heads/ pour trouver les branches existantes
+        // le dossier .git/refs possède le sous dossier heads/ et remotes/
+        // la méthode .branches() attend un seul paramètre de type Option<BrancheType> 
 
-        // cependant comme le dossier .git/refs possède le sous dossier heads/ et remotes/ 
-        // On doit filtrer de facon à uniquement récupéré dans le dossier heads/ nos branches en locales
-
-        // c'est pour cette raison qu'on vient filtrer avec git2::BranchType::Local
-        // MAIS la méthode .branches() attend un seul paramètre de type Option<BrancheType> 
-
-        // on vient utiliser .Some() pour convertir la donnée en Option<BranchType>
-        
         for b in branches.flatten() {
             let (branch, _) = b;
             if let (Ok(Some(nom)), Some(target)) = (branch.name(), branch.get().target()) {
@@ -74,18 +67,12 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     for (branch_name, tip_oid) in &branch_tips {
         let mut branch_revwalk = repo.revwalk().map_err(|e| e.to_string())?;
         branch_revwalk.push(*tip_oid).map_err(|e| e.to_string())?;
-        branch_revwalk.simplify_first_parent().map_err(|e| e.to_string())?; // ne suit que le 1er parent, pour ne pas "fuiter" dans l'historique fusionné d'un merge
+        branch_revwalk.simplify_first_parent().map_err(|e| e.to_string())?; 
+        // ne suit que le 1er parent, pour ne pas "fuiter" dans l'historique fusionné d'un merge
 
         for id in branch_revwalk {
             let oid = id.map_err(|e| e.to_string())?;
             let commit_id_str = oid.to_string();
-
-            /*let list = owner.entry(commit_id_str.clone()).or_default();
-            list.push(branch_name.clone()); 
-
-            if list.len() > 1 {
-                break;
-            }*/ 
 
             let list = owner.entry(commit_id_str.clone()).or_default();
             if !list.contains(branch_name) {
@@ -99,7 +86,7 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     revwalk.push_glob("refs/heads/*").map_err(|e| e.to_string())?;
     revwalk.push_glob("refs/remotes/*").map_err(|e| e.to_string())?;
 
-    revwalk.set_sorting(git2::Sort::TOPOLOGICAL | git2::Sort::TIME).map_err(|e| e.to_string())?; // IA
+    revwalk.set_sorting(git2::Sort::TOPOLOGICAL | git2::Sort::TIME).map_err(|e| e.to_string())?; 
 
     /* repo.revwalk() instancie l'outil qui va permettre de parcourir tout les messages de commit dans notre projet 
     

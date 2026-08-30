@@ -123,7 +123,7 @@
 </script>
 
 <GitViewport {activeView} bind:filterMode>
-  <!-- 1. Ce qui va dans la scène zoomable (le graphe) -->
+  <!-- Ce qui va dans la scène zoomable (le graphe) -->
   {#snippet graph()}
     {#key displayedCommits}
       <div bind:this={gitgraphElement}></div>

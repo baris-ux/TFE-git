@@ -5,11 +5,9 @@
 
 
 use serde::Serialize; // import qui permet d'utiliser #[derive(Serialize)]
-use std::process::Command;
 
 mod is_git_installed;
 mod git_repository;
-mod tuto_exercice_modules;
 mod repository_state;
 
 #[derive(Serialize)]
@@ -56,8 +54,6 @@ pub fn run() {
             repository_state::get_not_pushed_commits,
             git_repository::get_git,  
             is_git_installed::verify_if_git_installed, 
-            tuto_exercice_modules::verify_tutorial_step,
-            tuto_exercice_modules::setup_exercise_repo
             ]
         )
         .run(tauri::generate_context!())
