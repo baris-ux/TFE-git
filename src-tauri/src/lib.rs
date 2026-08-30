@@ -10,6 +10,7 @@ use std::process::Command;
 mod is_git_installed;
 mod git_repository;
 mod tuto_exercice_modules;
+mod repository_state;
 
 #[derive(Serialize)]
 pub struct CommitInfo {
@@ -42,40 +43,6 @@ fn compare_commit(path: &str, old_commit: &str, new_commit: &str) -> Result<Stri
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
-#[tauri::command]
-fn get_actif_files(path:String) -> Result <String, String>{
-    let output = Command::new("git")
-    .args(["status", "--porcelain"])
-    .current_dir(&path)
-    .output()
-    .map_err(|e| e.to_string())?;
-
-    // on déclare son type de retour
-    if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    }
-    else{
-        Err(String::from_utf8_lossy(&output.stderr).to_string())
-    }
-}
-
-#[tauri::command]
-fn get_not_pushed_commits(path:String) -> Result <String, String>{
-    let output = Command::new("git")
-    .args(["log", "@{u}..HEAD"])
-    .current_dir(&path)
-    .output()
-    .map_err(|e| e.to_string())?;
-
-    if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    }
-    else{
-        Err(String::from_utf8_lossy(&output.stderr).to_string())
-    }
-}
-
-
 // #[cfg_attr(mobile, tauri::mobile_entry_point)] ==> si on compile le projet sur android ou IOS il génère le code necessaire pour le fonctionne
 pub fn run() {
     tauri::Builder::default()
@@ -84,9 +51,9 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init()) // ajout du plugin dialog permettant d'ouvrir l'explorateur de fichiers de l'os
         .invoke_handler(tauri::generate_handler![
             compare_commit, 
-            get_not_pushed_commits,
-            get_actif_files,
             git_repository::if_git_repository, 
+            repository_state::get_actif_files,
+            repository_state::get_not_pushed_commits,
             git_repository::get_git,  
             is_git_installed::verify_if_git_installed, 
             tuto_exercice_modules::verify_tutorial_step,
