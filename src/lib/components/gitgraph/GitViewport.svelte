@@ -50,7 +50,6 @@
     const rect = viewportElement?.getBoundingClientRect();
     if (!rect) return;
 
-    // ce les coordonnées dans le canvas
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
