@@ -36,9 +36,9 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
         // le dossier .git/refs possède le sous dossier heads/ et remotes/
         // la méthode .branches() attend un seul paramètre de type Option<BrancheType> 
 
-        for b in branches.flatten() {
+        for b in branches.flatten() { // .flatten() ignore les branches qu'on n'arrive pas à lire
             let (branch, _) = b;
-            if let (Ok(Some(nom)), Some(target)) = (branch.name(), branch.get().target()) {
+            if let (Ok(Some(nom)), Some(target)) = (branch.name(), branch.get().target()) { 
                 branch_tips.push((nom.to_string(), target));
             }
         }
@@ -49,6 +49,8 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
     // if nom est main il retourne 0 si autre autre que main alors retourne 1
     // la branche main sera prioritaire lors va parcourir avec revwalk (score : 0)
     // les autre branches seront parcouru par le revwalk selon l'ordr edans lequel ils sont trouvé dans le dossier .git/refs/
+
+    // ex : [ ("main", abc123), ("feature", def456), ("origin/main", abc123) ]
 
     let mut owner: HashMap<String, Vec<String>> = HashMap::new(); 
     // pour rappelle un hashmap est un structure qui contient des information sous la forme clé : valeur
@@ -112,7 +114,6 @@ pub fn get_git(path: String) -> Result<Vec<CommitInfo>, String> {
 
         let mes_branches: Vec<String> = owner
             .get(&commit_id_str)
-            //.map(|b| vec![b.clone()])
             .cloned()
             .unwrap_or_default();
 

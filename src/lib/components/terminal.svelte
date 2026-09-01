@@ -6,7 +6,24 @@
   import "@xterm/xterm/css/xterm.css";
   import CloseButton from "./ui/CloseButton.svelte";
 
-  let tabs = $state<TerminalLab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
+  interface TerminalTab {
+    id: string; //chaque instance de terminal aura son id unique
+    name: string; // chaque instance de terminal aura un nom
+    element?: HTMLDivElement; // chaque instance aura une référence vers la balise html, on ajoute ? car un terminal non ouvert n'a pas de div dédié
+    term?: Terminal;
+
+    fitAddon?: FitAddon;
+    // fitAddon c'est une class contenu dans le package "@xterm/addon-fit", elle définit une structure d'objet et par conséquent on peut l'utiliser comme type
+    // il faut que chaque instance a cette clé car chaque terminal a besoin que le nombre de ligne et colonne s'adaptent au div parent
+
+    pty?: Pty; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
+
+    resizeObserver?: ResizeObserver;
+    // un écouteur d'évènement,
+    // il est déja intégré dans le navigateur pas besoin de l'installer on vient faire une déclaration de type
+  }
+
+  let tabs = $state<TerminalTab[]>([]); // cette variable contiendra l'ensemble des instance de terminal ouverts
   let activeTab = $state<string | null>(null); // cette variable contiendra l'ID de l'instance du terminal !!!
 
   let {
@@ -25,21 +42,6 @@
   type Pty = ReturnType<typeof spawn>;
   // pour corriger ce que me dit le github action je remplace any,
   // je viens donné le type du résultat obtenu par la fonction spawn()
-
-  interface TerminalLab {
-    id: string; //chaque instance de terminal aura son id unique
-    name: string; // chaque instance de terminal aura un nom
-    element?: HTMLDivElement; // chaque instance aura une référence vers la balise html, on ajoute ? car un terminal non ouvert n'a pas de div dédié
-    term?: Terminal;
-
-    fitAddon?: FitAddon; // fitAddon c'est une class contenu dans le package "@xterm/addon-fit", elle définit une structure d'objet et par conséquent on peut l'utiliser comme type
-    // il faut que chaque instance a cette clé car chaque terminal a besoin que le nombre de ligne et colonne s'adaptent au div parent
-
-    pty?: Pty; // chaque xterm aura son pty (bridge) qui permettra de parler avec rust
-
-    resizeObserver?: ResizeObserver; // un écouteur d'évènement,
-    // il est déja intégré dans le navigateur pas besoin de l'installer on vient faire une déclaration de type
-  }
 
   $effect(() => {
     if (projectPath && activeTab) {
@@ -65,7 +67,7 @@
   }
 
   async function createTerminalInstance() {
-    const newTab: TerminalLab = {
+    const newTab: TerminalTab = {
       id: crypto.randomUUID(),
       name: `bash ${tabs.length + 1}`,
     };
@@ -190,7 +192,8 @@
           onkeydown={(e) =>
             (e.key === "Enter" || e.key === " ") && selectTab(tab.id)}
         >
-          <!-- pour se débarasser du warning, car un <div> n'est pas censé être cliquable -->
+          <!-- ajout de role = "button", onkeydown et tabIndex="0" pour se débarasser du warning, 
+           car un <div> n'est pas censé être cliquable-->
           <span>{tab.name}</span>
           <CloseButton onclick={() => deleteTab(tab.id)} />
         </div>
@@ -201,8 +204,6 @@
     </button>
   </div>
 
-  <!-- IA -->
-
   <div class="terminal-body">
     {#each tabs as tab (tab.id)}
       <div
@@ -212,9 +213,6 @@
       ></div>
     {/each}
   </div>
-  <!-- IA -->
-
-  <!--<div bind:this={tab.element} class="terminal-container"></div> -->
 </div>
 
 <style>
